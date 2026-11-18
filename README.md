@@ -13,15 +13,18 @@ npm start
 
 ## Сборки
 
-С мака собираются обе. Готовые файлы падают в `dist/` и в гит не коммитятся.
+Готовые файлы падают в `dist/` и в гит не коммитятся. Внутри установщика уже всё, пользователю ничего отдельно ставить не надо.
 
 ```bash
 npm run build:mac
 npm run build:win
 ```
 
-- Mac: `dist/ChatServer-<version>-arm64.dmg`
-- Windows x64: `dist/ChatServer-<version>-x64.exe`
+- Mac, образ: `dist/ChatServer-<version>-arm64.dmg`
+- Mac, установщик: `dist/ChatServer-<version>-arm64.pkg`
+- Windows, установщик: `dist/ChatServer-<version>-x64-setup.exe`
+
+Windows-приложение на .NET, собирается отдельно от Mac. Для установщика нужен NSIS: `brew install makensis`.
 
 Приложение не подписано. macOS при первом запуске может ругаться: ПКМ по приложению → Открыть.
 
@@ -48,10 +51,11 @@ npm run build
 Дальше на GitHub: Releases → Draft a new release. Тег `v1.0.0`, к нему прикрепи:
 
 - `dist/ChatServer-1.0.0-arm64.dmg`
-- `dist/ChatServer-1.0.0-x64.exe`
+- `dist/ChatServer-1.0.0-arm64.pkg`
+- `dist/ChatServer-1.0.0-x64-setup.exe`
 
 То же через CLI:
 
 ```bash
-gh release create v1.0.0 dist/ChatServer-1.0.0-arm64.dmg dist/ChatServer-1.0.0-x64.exe --title v1.0.0
+gh release create v1.0.0 dist/ChatServer-1.0.0-arm64.dmg dist/ChatServer-1.0.0-arm64.pkg dist/ChatServer-1.0.0-x64-setup.exe --title v1.0.0
 ```

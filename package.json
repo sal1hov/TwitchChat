@@ -9,7 +9,7 @@
     "start": "electron .",
     "server": "node server.js",
     "build:mac": "electron-builder --mac",
-    "build:win": "electron-builder --win portable --x64",
+    "build:win": "bash windows/build.sh",
     "build": "npm run build:mac && npm run build:win"
   },
   "dependencies": {
@@ -38,17 +38,7 @@
       "identity": null,
       "category": "public.app-category.utilities",
       "icon": "assets/icon.png",
-      "target": ["dmg", "dir"]
-    },
-    "win": {
-      "icon": "assets/icon.png",
-      "artifactName": "ChatServer-${version}-x64.${ext}",
-      "target": [
-        {
-          "target": "portable",
-          "arch": ["x64"]
-        }
-      ]
+      "target": ["dmg", "pkg"]
     }
   }
 }

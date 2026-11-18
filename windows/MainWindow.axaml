@@ -1,0 +1,36 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="ChatServer.MainWindow"
+        Width="420" Height="470"
+        CanResize="False"
+        Title="ChatServer"
+        Background="#0e0e10"
+        WindowStartupLocation="CenterScreen">
+  <Grid Margin="28,36,28,28" RowDefinitions="Auto,Auto,*,Auto">
+    <StackPanel Grid.Row="0" HorizontalAlignment="Center" Spacing="0">
+      <Image Width="84" Height="84" Source="avares://ChatServer/Assets/icon.png"/>
+      <TextBlock Margin="0,14,0,28"
+                 HorizontalAlignment="Center"
+                 Foreground="#adadb8"
+                 FontSize="16"
+                 Text="Локальный чат для OBS"/>
+    </StackPanel>
+    <StackPanel Grid.Row="1" Spacing="10">
+      <TextBox x:Name="ChannelBox" Watermark="Канал или ссылка"/>
+      <Button Classes="primary" Content="Старт" Click="StartClick"/>
+      <TextBlock x:Name="ErrorText" Foreground="#eb0400" FontSize="13" MinHeight="18" TextWrapping="Wrap"/>
+      <Panel x:Name="LinkBox" IsVisible="False">
+        <TextBox x:Name="LinkInput" IsReadOnly="True" Padding="14,0,46,0"/>
+        <Button Classes="icon"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Center"
+                Margin="0,0,4,0"
+                Click="CopyClick"
+                ToolTip.Tip="Скопировать">
+          <Path Width="18" Height="18" Stretch="Uniform" Fill="#adadb8"
+                Data="M16,1 H4 C2.9,1 2,1.9 2,3 V17 H4 V3 H16 Z M19,5 H8 C6.9,5 6,5.9 6,7 V21 C6,22.1 6.9,23 8,23 H19 C20.1,23 21,22.1 21,21 V7 C21,5.9 20.1,5 19,5 Z M19,21 H8 V7 H19 Z"/>
+        </Button>
+      </Panel>
+    </StackPanel>
+  </Grid>
+</Window>
