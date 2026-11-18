@@ -48,14 +48,14 @@ git push -u origin main
 npm run build
 ```
 
-Дальше на GitHub: Releases → Draft a new release. Тег `v1.0.0`, к нему прикрепи:
+Дальше на GitHub: Releases → Draft a new release. Тег `v1.0.1`, к нему прикрепи:
 
-- `dist/ChatServer-1.0.0-arm64.dmg`
-- `dist/ChatServer-1.0.0-arm64.pkg`
-- `dist/ChatServer-1.0.0-x64-setup.exe`
+- `dist/ChatServer-1.0.1-arm64.dmg`
+- `dist/ChatServer-1.0.1-arm64.pkg`
+- `dist/ChatServer-1.0.1-x64-setup.exe`
 
 То же через CLI:
 
 ```bash
-gh release create v1.0.0 dist/ChatServer-1.0.0-arm64.dmg dist/ChatServer-1.0.0-arm64.pkg dist/ChatServer-1.0.0-x64-setup.exe --title v1.0.0
+gh release create v1.0.1 dist/ChatServer-1.0.1-arm64.dmg dist/ChatServer-1.0.1-arm64.pkg dist/ChatServer-1.0.1-x64-setup.exe --title v1.0.1
 ```
