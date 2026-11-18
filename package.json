@@ -1,0 +1,54 @@
+{
+  "name": "chat-server",
+  "productName": "ChatServer",
+  "version": "1.0.0",
+  "description": "Локальный Twitch-чат для OBS",
+  "private": true,
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "server": "node server.js",
+    "build:mac": "electron-builder --mac",
+    "build:win": "electron-builder --win portable --x64",
+    "build": "npm run build:mac && npm run build:win"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "tmi.js": "^1.8.5",
+    "ws": "^8.18.3"
+  },
+  "devDependencies": {
+    "electron": "^33.4.11",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "local.chatserver.app",
+    "productName": "ChatServer",
+    "asar": true,
+    "files": [
+      "main.js",
+      "preload.js",
+      "server.js",
+      "app.html",
+      "public/**/*",
+      "assets/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "identity": null,
+      "category": "public.app-category.utilities",
+      "icon": "assets/icon.png",
+      "target": ["dmg", "dir"]
+    },
+    "win": {
+      "icon": "assets/icon.png",
+      "artifactName": "ChatServer-${version}-x64.${ext}",
+      "target": [
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ]
+    }
+  }
+}
