@@ -6,7 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyName>ChatServer</AssemblyName>
     <RootNamespace>ChatServer</RootNamespace>
-    <Version>2.1</Version>
+    <Version>2.1.0</Version>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>chatserver.ico</ApplicationIcon>
     <InvariantGlobalization>true</InvariantGlobalization>

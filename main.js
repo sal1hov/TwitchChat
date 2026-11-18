@@ -121,7 +121,7 @@ ipcMain.handle('copy', (event, text) => {
   clipboard.writeText(String(text || ''));
 });
 
-ipcMain.handle('version', () => app.getVersion());
+ipcMain.handle('version', () => app.getVersion().replace(/\.0$/, ''));
 
 ipcMain.handle('open-author', () => shell.openExternal('https://github.com/strdns'));
 

@@ -1,14 +1,14 @@
 {
   "name": "chat-server",
   "productName": "ChatServer",
-  "version": "2.1",
+  "version": "2.1.0",
   "description": "Локальный Twitch-чат для OBS",
   "private": true,
   "main": "main.js",
   "scripts": {
     "start": "electron .",
     "server": "node server.js",
-    "build:mac": "electron-builder --mac",
+    "build:mac": "node scripts/build-mac.js",
     "build:win": "bash windows/build.sh",
     "build": "npm run build:mac && npm run build:win"
   },
