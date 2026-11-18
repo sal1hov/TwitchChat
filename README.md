@@ -37,17 +37,21 @@ git push -u origin main
 
 ## Релиз
 
-Версия файла берется из `version` в `package.json`, не из тега. Перед релизом подними версию и закоммить.
+Сборки делаешь сам и кладёшь файлы в релиз. Actions нет.
+
+Подними `version` в `package.json`, закоммить, собери:
 
 ```bash
-git tag v1.0.0
-git push origin v1.0.0
+npm run build
 ```
 
-GitHub Actions соберет dmg и exe и прикрепит их к релизу этого тега.
+Дальше на GitHub: Releases → Draft a new release. Тег `v1.0.0`, к нему прикрепи:
 
-Ручной релиз, если Actions не нужен. Сначала локальная сборка, потом:
+- `dist/ChatServer-1.0.0-arm64.dmg`
+- `dist/ChatServer-1.0.0-x64.exe`
+
+То же через CLI:
 
 ```bash
-gh release create v1.0.0 dist/ChatServer-1.0.0-arm64.dmg dist/ChatServer-1.0.0-x64.exe
+gh release create v1.0.0 dist/ChatServer-1.0.0-arm64.dmg dist/ChatServer-1.0.0-x64.exe --title v1.0.0
 ```

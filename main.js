@@ -61,9 +61,10 @@ function showWindow() {
 
 function createWindow() {
   win = new BrowserWindow({
-    width: 460,
-    height: 340,
+    width: 420,
+    height: 470,
     resizable: false,
+    backgroundColor: '#0e0e10',
     title: 'ChatServer',
     show: false,
     webPreferences: {
