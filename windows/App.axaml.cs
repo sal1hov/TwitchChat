@@ -45,9 +45,12 @@ public partial class App : Application
             menu.Items.Add(new NativeMenuItemSeparator());
             menu.Items.Add(quit);
 
+            var trayIcon = OperatingSystem.IsWindows()
+                ? "avares://ChatServer/Assets/icon.png"
+                : "avares://ChatServer/Assets/tray-mac.png";
             var tray = new TrayIcon
             {
-                Icon = new WindowIcon(AssetLoader.Open(new Uri("avares://ChatServer/Assets/icon.png"))),
+                Icon = new WindowIcon(AssetLoader.Open(new Uri(trayIcon))),
                 ToolTipText = "ChatServer",
                 Menu = menu
             };

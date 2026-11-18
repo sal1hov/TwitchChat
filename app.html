@@ -25,10 +25,143 @@
       border-radius: 20px;
     }
     .tagline {
-      margin: 14px 0 28px;
+      margin: 14px 0 6px;
       color: #adadb8;
       font-size: 16px;
       text-align: center;
+    }
+    #help-open {
+      margin: 0 0 22px;
+      padding: 0;
+      background: none;
+      color: #bf94ff;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    #help-open:hover {
+      color: #fff;
+    }
+    #help {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 2;
+      box-sizing: border-box;
+      padding: 22px 20px 18px;
+      background: #0e0e10;
+      overflow: auto;
+    }
+    #help.show {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    #help .steps {
+      flex: 1;
+      overflow: auto;
+    }
+    #help h1 {
+      margin: 0 0 14px;
+      font-size: 20px;
+      font-weight: 700;
+    }
+    .step {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 12px;
+      padding: 12px;
+      border-radius: 8px;
+      background: #18181b;
+    }
+    .num {
+      flex: 0 0 28px;
+      height: 28px;
+      border-radius: 14px;
+      background: #9146ff;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 28px;
+      text-align: center;
+    }
+    .step h2 {
+      margin: 2px 0 4px;
+      font-size: 15px;
+    }
+    .step p {
+      margin: 0;
+      color: #adadb8;
+      font-size: 13px;
+      line-height: 1.35;
+    }
+    .mock {
+      margin-top: 8px;
+      border-radius: 6px;
+      background: #0e0e10;
+      overflow: hidden;
+    }
+    .mock .field,
+    .mock .btn {
+      height: 22px;
+      margin: 8px;
+      border-radius: 4px;
+    }
+    .mock .field {
+      background: #18181b;
+    }
+    .mock .btn {
+      background: #9146ff;
+    }
+    .mock .link {
+      height: 22px;
+      margin: 8px;
+      border-radius: 4px;
+      background: #18181b;
+      position: relative;
+    }
+    .mock .link::after {
+      content: "";
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      width: 14px;
+      height: 14px;
+      border-radius: 3px;
+      background: #3a3a3d;
+    }
+    .obs {
+      height: 72px;
+      margin: 8px;
+      border-radius: 6px;
+      background: linear-gradient(160deg, #2a2a2e, #121214);
+      position: relative;
+    }
+    .obs .chat {
+      position: absolute;
+      left: 8px;
+      right: 8px;
+      bottom: 8px;
+      padding: 6px;
+      border-radius: 4px;
+      background: rgba(0, 0, 0, 0.55);
+    }
+    .obs .chat i {
+      display: block;
+      height: 4px;
+      margin-top: 4px;
+      border-radius: 2px;
+      background: #fff;
+    }
+    .obs .chat i:first-child { margin-top: 0; width: 70%; }
+    .obs .chat i:nth-child(2) { width: 46%; background: #ff4d4d; }
+    .obs .chat i:nth-child(3) { width: 58%; }
+    #help-close {
+      flex: none;
+      width: 100%;
+      height: 40px;
+      margin-top: 8px;
+      background: #9146ff;
+      color: #fff;
     }
     .stack {
       width: 100%;
@@ -109,12 +242,31 @@
       height: 18px;
       fill: currentColor;
     }
+    footer {
+      margin-top: auto;
+      color: #53535f;
+      font-size: 12px;
+      text-align: center;
+      line-height: 1.5;
+    }
+    #author {
+      padding: 0;
+      background: none;
+      color: #bf94ff;
+      font-size: 12px;
+      font-weight: 600;
+      text-decoration: none;
+    }
+    #author:hover {
+      color: #fff;
+    }
   </style>
 </head>
 <body>
   <main>
     <img class="logo" src="assets/icon.png" alt="">
     <div class="tagline">Локальный чат для OBS</div>
+    <button id="help-open" type="button">Как это работает</button>
     <div class="stack">
       <input id="channel" placeholder="Канал или ссылка" autocomplete="off" spellcheck="false">
       <button id="start" type="button">Старт</button>
@@ -128,7 +280,41 @@
         </button>
       </div>
     </div>
+    <footer>
+      <div id="version">2.0.0</div>
+      <div>development by <a id="author" href="https://github.com/strdns">strdns</a></div>
+    </footer>
   </main>
+  <div id="help">
+    <h1>Как это работает</h1>
+    <div class="steps">
+    <div class="step">
+      <div class="num">1</div>
+      <div>
+        <h2>Введи канал</h2>
+        <p>Логин или ссылку Twitch, потом «Старт». Чат этого канала начнёт приходить на твой компьютер.</p>
+        <div class="mock"><div class="field"></div><div class="btn"></div></div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="num">2</div>
+      <div>
+        <h2>Скопируй ссылку</h2>
+        <p>Она появится ниже. Кнопка справа кладёт адрес в буфер.</p>
+        <div class="mock"><div class="link"></div></div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="num">3</div>
+      <div>
+        <h2>Вставь в OBS</h2>
+        <p>Источник «Браузер», вставь ссылку. Сообщения встанут снизу, поверх картинки стрима.</p>
+        <div class="obs"><div class="chat"><i></i><i></i><i></i></div></div>
+      </div>
+    </div>
+    </div>
+    <button id="help-close" type="button">Понятно</button>
+  </div>
   <script>
     const channelInput = document.getElementById('channel');
     const startButton = document.getElementById('start');
@@ -164,8 +350,20 @@
     document.getElementById('copy').addEventListener('click', () => {
       window.api.copy(linkInput.value);
     });
+    document.getElementById('author').addEventListener('click', (event) => {
+      if (!window.api) return;
+      event.preventDefault();
+      window.api.openAuthor();
+    });
+
+    const help = document.getElementById('help');
+    document.getElementById('help-open').addEventListener('click', () => help.classList.add('show'));
+    document.getElementById('help-close').addEventListener('click', () => help.classList.remove('show'));
 
     if (window.api) {
+      window.api.version().then((version) => {
+        if (version) document.getElementById('version').textContent = version;
+      });
       window.api.getChannel().then((channel) => {
         if (!channel) return;
         channelInput.value = channel;

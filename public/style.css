@@ -16,7 +16,7 @@ body {
   gap: 8px;
   padding: 12px;
   overflow: hidden;
-  background: rgba(0, 0, 0, 0.45);
+  background: rgba(0, 0, 0, 0.55);
   font-size: 48px;
 }
 
@@ -140,7 +140,7 @@ body {
 }
 
 .emote {
-  height: 112px;
+  height: 98px;
   margin: 0 4px;
   vertical-align: middle;
 }

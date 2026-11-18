@@ -96,6 +96,24 @@ function appIcon(px, py, size) {
   ];
 }
 
+function trayMac(px, py, size) {
+  const plate = smooth(roundedRect(px, py, 0, 0, size, size, size * 0.22) + 0.8);
+  if (plate <= 0) return [0, 0, 0, 0];
+  const right = size * 0.78;
+  const lines = [
+    [size * 0.30, size * 0.56],
+    [size * 0.46, size * 0.42],
+    [size * 0.62, size * 0.34]
+  ];
+  const height = size * 0.075;
+  let ink = 0;
+  for (const [y, w] of lines) {
+    ink = Math.max(ink, smooth(roundedRect(px, py, right - w, y, w, height, height / 2) + 0.8));
+  }
+  const color = Math.round(lerp(255, 0, ink));
+  return [color, color, color, Math.round(255 * plate)];
+}
+
 function bubble(x, y, size) {
   const nx = (x + 0.5) / size;
   const ny = (y + 0.5) / size;
@@ -115,6 +133,10 @@ fs.writeFileSync(path.join(dir, 'trayTemplate.png'), png(32, (x, y, size) => {
 
 fs.writeFileSync(path.join(dir, 'tray.png'), png(32, (x, y, size) => {
   return bubble(x, y, size) ? [61, 255, 138, 255] : [0, 0, 0, 0];
+}));
+
+fs.writeFileSync(path.join(dir, 'tray-mac.png'), png(128, (x, y, size) => {
+  return trayMac(x + 0.5, y + 0.5, size);
 }));
 
 fs.writeFileSync(path.join(dir, 'icon.png'), png(1024, (x, y, size) => {

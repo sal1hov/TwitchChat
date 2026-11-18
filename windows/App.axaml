@@ -38,6 +38,18 @@
       <Setter Property="Padding" Value="0"/>
       <Setter Property="CornerRadius" Value="4"/>
     </Style>
+    <Style Selector="Button.link">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="Foreground" Value="#bf94ff"/>
+      <Setter Property="FontSize" Value="14"/>
+      <Setter Property="FontWeight" Value="SemiBold"/>
+      <Setter Property="Padding" Value="0"/>
+      <Setter Property="HorizontalAlignment" Value="Center"/>
+      <Setter Property="HorizontalContentAlignment" Value="Center"/>
+    </Style>
+    <Style Selector="Button.link:pointerover">
+      <Setter Property="Foreground" Value="White"/>
+    </Style>
     <Style Selector="Button.icon:pointerover">
       <Setter Property="Background" Value="#26262c"/>
     </Style>

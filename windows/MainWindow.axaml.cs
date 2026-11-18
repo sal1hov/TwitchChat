@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -9,6 +10,8 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        var version = typeof(MainWindow).Assembly.GetName().Version;
+        if (version != null) VersionText.Text = $"{version.Major}.{version.Minor}.{version.Build}";
         Icon = new WindowIcon(Avalonia.Platform.AssetLoader.Open(new Uri("avares://ChatServer/Assets/icon.png")));
         ChannelBox.KeyDown += (_, eventArgs) =>
         {
@@ -33,6 +36,15 @@ public partial class MainWindow : Window
     }
 
     void StartClick(object? sender, RoutedEventArgs e) => _ = Start();
+
+    void HelpOpen(object? sender, RoutedEventArgs e) => Help.IsVisible = true;
+
+    void HelpClose(object? sender, RoutedEventArgs e) => Help.IsVisible = false;
+
+    void OpenAuthor(object? sender, RoutedEventArgs e)
+    {
+        Process.Start(new ProcessStartInfo("https://github.com/strdns") { UseShellExecute = true });
+    }
 
     async void CopyClick(object? sender, RoutedEventArgs e)
     {

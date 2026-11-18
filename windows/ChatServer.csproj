@@ -6,7 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyName>ChatServer</AssemblyName>
     <RootNamespace>ChatServer</RootNamespace>
-    <Version>1.0.1</Version>
+    <Version>2.0.0</Version>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>chatserver.ico</ApplicationIcon>
     <InvariantGlobalization>true</InvariantGlobalization>
@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <AvaloniaResource Include="..\assets\icon.png" Link="Assets\icon.png" />
+    <AvaloniaResource Include="..\assets\tray-mac.png" Link="Assets\tray-mac.png" />
     <Content Include="..\public\**\*">
       <Link>public\%(RecursiveDir)%(Filename)%(Extension)</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

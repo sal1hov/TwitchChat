@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Tray, Menu, clipboard, nativeImage, ipcMain } = require('electron');
+const { app, BrowserWindow, Tray, Menu, clipboard, nativeImage, ipcMain, shell } = require('electron');
 const fs = require('fs');
 const path = require('path');
 const { startChannel, port } = require('./server');
@@ -24,10 +24,8 @@ function writeSettings(data) {
 }
 
 function trayIcon() {
-  const file = process.platform === 'darwin' ? 'trayTemplate.png' : 'tray.png';
-  const image = nativeImage.createFromPath(path.join(__dirname, 'assets', file));
-  if (process.platform === 'darwin') image.setTemplateImage(true);
-  return image;
+  const file = process.platform === 'darwin' ? 'tray-mac.png' : 'icon.png';
+  return nativeImage.createFromPath(path.join(__dirname, 'assets', file));
 }
 
 function refreshTray() {
@@ -62,7 +60,7 @@ function showWindow() {
 function createWindow() {
   win = new BrowserWindow({
     width: 420,
-    height: 470,
+    height: 510,
     resizable: false,
     backgroundColor: '#0e0e10',
     title: 'ChatServer',
@@ -110,6 +108,10 @@ ipcMain.handle('copy', (event, text) => {
   clipboard.writeText(String(text || ''));
 });
 
+ipcMain.handle('version', () => app.getVersion());
+
+ipcMain.handle('open-author', () => shell.openExternal('https://github.com/strdns'));
+
 const gotLock = app.requestSingleInstanceLock();
 if (!gotLock) {
   app.quit();
@@ -117,7 +119,6 @@ if (!gotLock) {
   app.on('second-instance', () => showWindow());
 
   app.whenReady().then(() => {
-    if (process.platform === 'darwin' && app.dock) app.dock.hide();
     createWindow();
     tray = new Tray(trayIcon());
     tray.setToolTip('ChatServer');

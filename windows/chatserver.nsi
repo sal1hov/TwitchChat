@@ -2,7 +2,7 @@ Unicode true
 !include "MUI2.nsh"
 
 !ifndef VERSION
-  !define VERSION "1.0.1"
+  !define VERSION "2.0.0"
 !endif
 !ifndef PUBLISHDIR
   !error "PUBLISHDIR is not set"
@@ -18,6 +18,9 @@ RequestExecutionLevel user
 SetCompressor lzma
 
 !define MUI_ABORTWARNING
+!define MUI_FINISHPAGE_SHOWREADME
+!define MUI_FINISHPAGE_SHOWREADME_TEXT "Создать ярлык на рабочем столе"
+!define MUI_FINISHPAGE_SHOWREADME_FUNCTION CreateDesktopShortcut
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
 !insertmacro MUI_PAGE_FINISH
@@ -37,8 +40,13 @@ Section
   WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\ChatServer" "NoRepair" 1
 SectionEnd
 
+Function CreateDesktopShortcut
+  CreateShortcut "$DESKTOP\ChatServer.lnk" "$INSTDIR\ChatServer.exe"
+FunctionEnd
+
 Section "Uninstall"
   Delete "$SMPROGRAMS\ChatServer.lnk"
+  Delete "$DESKTOP\ChatServer.lnk"
   RMDir /r "$INSTDIR"
   DeleteRegKey HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\ChatServer"
 SectionEnd
