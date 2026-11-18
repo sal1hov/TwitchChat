@@ -7,16 +7,24 @@ namespace ChatServer;
 
 public partial class MainWindow : Window
 {
+    enum Phase { Idle, Connecting, Live, Stopping }
+    Phase _phase = Phase.Idle;
+
     public MainWindow()
     {
         InitializeComponent();
         var version = typeof(MainWindow).Assembly.GetName().Version;
-        if (version != null) VersionText.Text = $"{version.Major}.{version.Minor}.{version.Build}";
+        if (version != null)
+            VersionText.Text = version.Build > 0
+                ? $"{version.Major}.{version.Minor}.{version.Build}"
+                : $"{version.Major}.{version.Minor}";
         Icon = new WindowIcon(Avalonia.Platform.AssetLoader.Open(new Uri("avares://ChatServer/Assets/icon.png")));
+        ChannelBox.TextChanged += (_, _) => { if (_phase == Phase.Idle) Paint(); };
         ChannelBox.KeyDown += (_, eventArgs) =>
         {
-            if (eventArgs.Key == Key.Enter) _ = Start();
+            if (eventArgs.Key == Key.Enter && _phase == Phase.Idle) _ = Start();
         };
+        Paint();
         var saved = App.Session.ReadChannel();
         if (!string.IsNullOrEmpty(saved))
         {
@@ -35,7 +43,36 @@ public partial class MainWindow : Window
         base.OnClosing(e);
     }
 
-    void StartClick(object? sender, RoutedEventArgs e) => _ = Start();
+    void QuitClick(object? sender, RoutedEventArgs e) => App.Quit();
+
+    void StartClick(object? sender, RoutedEventArgs e)
+    {
+        if (_phase == Phase.Live) _ = Stop();
+        else _ = Start();
+    }
+
+    void Paint()
+    {
+        switch (_phase)
+        {
+            case Phase.Connecting:
+                StartButton.Content = "Подключение";
+                StartButton.IsEnabled = false;
+                break;
+            case Phase.Live:
+                StartButton.Content = "Стоп";
+                StartButton.IsEnabled = true;
+                break;
+            case Phase.Stopping:
+                StartButton.Content = "Стоп";
+                StartButton.IsEnabled = false;
+                break;
+            default:
+                StartButton.Content = "Старт";
+                StartButton.IsEnabled = !string.IsNullOrWhiteSpace(ChannelBox.Text);
+                break;
+        }
+    }
 
     void HelpOpen(object? sender, RoutedEventArgs e) => Help.IsVisible = true;
 
@@ -54,10 +91,14 @@ public partial class MainWindow : Window
 
     async Task Start()
     {
+        if (_phase != Phase.Idle || string.IsNullOrWhiteSpace(ChannelBox.Text)) return;
+        _phase = Phase.Connecting;
+        Paint();
         ErrorText.Text = "";
         try
         {
             var result = await App.Session.StartAsync(ChannelBox.Text ?? "");
+            if (_phase != Phase.Connecting) return;
             if (!string.IsNullOrEmpty(result.Channel)) ChannelBox.Text = result.Channel;
             if (!string.IsNullOrEmpty(result.Url))
             {
@@ -65,10 +106,30 @@ public partial class MainWindow : Window
                 LinkBox.IsVisible = true;
             }
             if (!result.Ok) ErrorText.Text = result.Error ?? "Не вышло";
+            _phase = result.Ok ? Phase.Live : Phase.Idle;
         }
         catch (Exception ex)
         {
+            if (_phase != Phase.Connecting) return;
             ErrorText.Text = ex.Message;
+            _phase = Phase.Idle;
+        }
+        Paint();
+    }
+
+    async Task Stop()
+    {
+        if (_phase != Phase.Live) return;
+        _phase = Phase.Stopping;
+        Paint();
+        try
+        {
+            await App.Session.StopAsync();
+        }
+        finally
+        {
+            _phase = Phase.Idle;
+            Paint();
         }
     }
 }

@@ -1,7 +1,7 @@
 const { app, BrowserWindow, Tray, Menu, clipboard, nativeImage, ipcMain, shell } = require('electron');
 const fs = require('fs');
 const path = require('path');
-const { startChannel, port } = require('./server');
+const { startChannel, stopChannel, port } = require('./server');
 
 let win = null;
 let tray = null;
@@ -25,7 +25,9 @@ function writeSettings(data) {
 
 function trayIcon() {
   const file = process.platform === 'darwin' ? 'tray-mac.png' : 'icon.png';
-  return nativeImage.createFromPath(path.join(__dirname, 'assets', file));
+  const image = nativeImage.createFromPath(path.join(__dirname, 'assets', file));
+  if (process.platform !== 'darwin') return image;
+  return image.resize({ width: 22, height: 22, quality: 'best' });
 }
 
 function refreshTray() {
@@ -60,7 +62,7 @@ function showWindow() {
 function createWindow() {
   win = new BrowserWindow({
     width: 420,
-    height: 510,
+    height: 560,
     resizable: false,
     backgroundColor: '#0e0e10',
     title: 'ChatServer',
@@ -88,6 +90,7 @@ ipcMain.handle('get-channel', () => readSettings().channel || '');
 ipcMain.handle('start', async (event, channel) => {
   try {
     const result = await startChannel(channel);
+    if (result && result.superseded) return { ok: true, superseded: true };
     obsUrl = result.url;
     writeSettings({ channel: result.channel });
     refreshTray();
@@ -102,6 +105,16 @@ ipcMain.handle('start', async (event, channel) => {
       error: err.code === 'EADDRINUSE' ? 'Порт ' + port + ' уже занят' : (err.message || 'Не вышло')
     };
   }
+});
+
+ipcMain.handle('stop', async () => {
+  await stopChannel();
+  return { ok: true };
+});
+
+ipcMain.handle('quit', () => {
+  quitting = true;
+  app.quit();
 });
 
 ipcMain.handle('copy', (event, text) => {

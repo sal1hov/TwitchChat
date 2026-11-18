@@ -1,7 +1,7 @@
 {
   "name": "chat-server",
   "productName": "ChatServer",
-  "version": "2.0.0",
+  "version": "2.1",
   "description": "Локальный Twitch-чат для OBS",
   "private": true,
   "main": "main.js",

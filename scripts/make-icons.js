@@ -135,7 +135,7 @@ fs.writeFileSync(path.join(dir, 'tray.png'), png(32, (x, y, size) => {
   return bubble(x, y, size) ? [61, 255, 138, 255] : [0, 0, 0, 0];
 }));
 
-fs.writeFileSync(path.join(dir, 'tray-mac.png'), png(128, (x, y, size) => {
+fs.writeFileSync(path.join(dir, 'tray-mac.png'), png(44, (x, y, size) => {
   return trayMac(x + 0.5, y + 0.5, size);
 }));
 

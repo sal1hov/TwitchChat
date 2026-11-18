@@ -206,6 +206,14 @@
       opacity: 0.6;
       cursor: default;
     }
+    #quit {
+      height: 40px;
+      background: #eb0400;
+      color: #fff;
+    }
+    #quit:hover {
+      background: #c20800;
+    }
     #error {
       min-height: 18px;
       color: #eb0400;
@@ -269,7 +277,8 @@
     <button id="help-open" type="button">Как это работает</button>
     <div class="stack">
       <input id="channel" placeholder="Канал или ссылка" autocomplete="off" spellcheck="false">
-      <button id="start" type="button">Старт</button>
+      <button id="start" type="button" disabled>Старт</button>
+      <button id="quit" type="button">Выход</button>
       <div id="error"></div>
       <div id="linkbox">
         <input id="link" readonly aria-label="Ссылка для OBS">
@@ -281,7 +290,7 @@
       </div>
     </div>
     <footer>
-      <div id="version">2.0.0</div>
+      <div id="version">2.1</div>
       <div>development by <a id="author" href="https://github.com/strdns">strdns</a></div>
     </footer>
   </main>
@@ -328,24 +337,69 @@
       linkBox.classList.add('show');
     }
 
-    async function run() {
-      errorBox.textContent = '';
-      startButton.disabled = true;
-      try {
-        const result = await window.api.start(channelInput.value);
-        if (result.channel) channelInput.value = result.channel;
-        showLink(result.url);
-        if (!result.ok) errorBox.textContent = result.error || 'Не вышло';
-      } catch (err) {
-        errorBox.textContent = err.message || 'Не вышло';
-      } finally {
+    let mode = 'idle';
+
+    function paint() {
+      if (mode === 'connecting') {
+        startButton.textContent = 'Подключение';
+        startButton.disabled = true;
+      } else if (mode === 'live') {
+        startButton.textContent = 'Стоп';
         startButton.disabled = false;
+      } else if (mode === 'stopping') {
+        startButton.textContent = 'Стоп';
+        startButton.disabled = true;
+      } else {
+        startButton.textContent = 'Старт';
+        startButton.disabled = channelInput.value.trim() === '';
       }
     }
 
-    startButton.addEventListener('click', run);
+    async function run() {
+      if (mode !== 'idle' || channelInput.value.trim() === '') return;
+      mode = 'connecting';
+      paint();
+      errorBox.textContent = '';
+      try {
+        const result = await window.api.start(channelInput.value);
+        if (mode !== 'connecting') return;
+        if (result.channel) channelInput.value = result.channel;
+        showLink(result.url);
+        if (!result.ok) errorBox.textContent = result.error || 'Не вышло';
+        mode = result.ok && !result.superseded ? 'live' : 'idle';
+      } catch (err) {
+        if (mode !== 'connecting') return;
+        errorBox.textContent = err.message || 'Не вышло';
+        mode = 'idle';
+      }
+      paint();
+    }
+
+    async function stop() {
+      if (mode !== 'live') return;
+      mode = 'stopping';
+      paint();
+      try {
+        await window.api.stop();
+      } finally {
+        mode = 'idle';
+        paint();
+      }
+    }
+
+    paint();
+    channelInput.addEventListener('input', () => {
+      if (mode === 'idle') paint();
+    });
+    document.getElementById('quit').addEventListener('click', () => {
+      if (window.api) window.api.quit();
+    });
+    startButton.addEventListener('click', () => {
+      if (mode === 'live') stop();
+      else run();
+    });
     channelInput.addEventListener('keydown', (event) => {
-      if (event.key === 'Enter') run();
+      if (event.key === 'Enter' && mode === 'idle') run();
     });
     document.getElementById('copy').addEventListener('click', () => {
       window.api.copy(linkInput.value);

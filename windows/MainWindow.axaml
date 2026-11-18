@@ -1,7 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="ChatServer.MainWindow"
-        Width="420" Height="510"
+        Width="420" Height="560"
         CanResize="False"
         Title="ChatServer"
         Background="#0e0e10"
@@ -18,7 +18,8 @@
     </StackPanel>
     <StackPanel Grid.Row="1" Spacing="10">
       <TextBox x:Name="ChannelBox" Watermark="Канал или ссылка"/>
-      <Button Classes="primary" Content="Старт" Click="StartClick"/>
+      <Button x:Name="StartButton" Classes="primary" Content="Старт" IsEnabled="False" Click="StartClick"/>
+      <Button Classes="danger" Content="Выход" Click="QuitClick"/>
       <TextBlock x:Name="ErrorText" Foreground="#eb0400" FontSize="13" MinHeight="18" TextWrapping="Wrap"/>
       <Panel x:Name="LinkBox" IsVisible="False">
         <TextBox x:Name="LinkInput" IsReadOnly="True" Padding="14,0,46,0"/>
@@ -34,7 +35,7 @@
       </Panel>
     </StackPanel>
     <StackPanel Grid.Row="3" HorizontalAlignment="Center" Spacing="2">
-      <TextBlock x:Name="VersionText" HorizontalAlignment="Center" Foreground="#53535f" FontSize="12" Text="2.0.0"/>
+      <TextBlock x:Name="VersionText" HorizontalAlignment="Center" Foreground="#53535f" FontSize="12" Text="2.1"/>
       <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="4">
         <TextBlock Text="development by" Foreground="#53535f" FontSize="12" VerticalAlignment="Center"/>
         <Button Classes="link" Content="strdns" Click="OpenAuthor" FontSize="12" MinHeight="0" Padding="0" VerticalAlignment="Center"/>

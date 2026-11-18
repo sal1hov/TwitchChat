@@ -22,7 +22,8 @@ const NICK_COLORS = [
 let emoteMap = new Map();
 let badgeMap = new Map();
 const history = [];
-let loading = false;
+let loadId = 0;
+let runId = 0;
 
 function defaultColor(name) {
   const value = String(name || '').toLowerCase();
@@ -166,8 +167,8 @@ function publishStatus() {
 }
 
 async function loadAssets() {
-  if (loading) return;
-  loading = true;
+  const id = ++loadId;
+  if (!channel) return;
   const nextEmotes = new Map();
   const nextBadges = new Map();
 
@@ -230,13 +231,13 @@ async function loadAssets() {
       for (const [key, value] of channelBadges) nextBadges.set(key, value);
     }
 
+    if (id !== loadId) return;
     emoteMap = nextEmotes;
     badgeMap = nextBadges;
     assetProblems = failed;
     console.log('эмоуты ' + emoteMap.size + ', бейджи ' + badgeMap.size);
   } finally {
-    loading = false;
-    publishStatus();
+    if (id === loadId) publishStatus();
   }
 }
 
@@ -391,6 +392,7 @@ wss.on('connection', (socket) => {
 
 function bindIrc(client) {
 client.on('connected', () => {
+  if (client !== irc) return;
   ircUp = true;
   ircProblem = '';
   console.log('irc подключен, канал #' + channel);
@@ -398,6 +400,7 @@ client.on('connected', () => {
 });
 
 client.on('disconnected', (reason) => {
+  if (client !== irc) return;
   ircUp = false;
   ircProblem = reason ? 'чат отвалился: ' + reason : 'чат отвалился';
   console.log(ircProblem);
@@ -405,13 +408,14 @@ client.on('disconnected', (reason) => {
 });
 
 client.on('reconnect', () => {
+  if (client !== irc) return;
   ircUp = false;
   ircProblem = 'переподключаюсь к чату';
   publishStatus();
 });
 
 client.on('message', (chan, tags, message, self) => {
-  if (self || tags['message-type'] === 'whisper') return;
+  if (client !== irc || self || tags['message-type'] === 'whisper') return;
   emitUser(tags, tags.username, parseParts(message, tags.emotes), {
     action: tags['message-type'] === 'action',
     flags: flagsOf(tags),
@@ -497,14 +501,29 @@ client.on('usernotice', (msgid, chan, tags, message) => {
 let irc = null;
 let listening = null;
 let refreshTimer = null;
-let queue = Promise.resolve();
-
 function normalizeChannel(input) {
-  let value = String(input || '').trim();
-  value = value.replace(/^https?:\/\//i, '');
-  value = value.replace(/^(www\.)?twitch\.tv\//i, '');
-  value = value.split(/[/?#]/)[0];
-  return value.replace(/^#/, '').toLowerCase();
+  const raw = String(input || '').trim();
+  if (!raw) throw new Error('Введи канал');
+
+  let login = raw;
+  if (looksLikeUrl(raw)) {
+    const withoutScheme = raw.replace(/^[a-z][a-z0-9+.-]*:\/\//i, '');
+    const host = withoutScheme.split(/[/?#]/)[0].replace(/^www\./i, '').toLowerCase();
+    if (host !== 'twitch.tv' && !host.endsWith('.twitch.tv')) {
+      throw new Error('Это не ссылка Twitch');
+    }
+    login = withoutScheme.slice(withoutScheme.indexOf('/') + 1);
+    if (!withoutScheme.includes('/')) login = '';
+  }
+
+  login = login.split(/[/?#]/)[0].replace(/^#/, '').toLowerCase();
+  if (!/^[a-z0-9_]{3,25}$/.test(login)) throw new Error('Неверный логин канала');
+  return login;
+}
+
+function looksLikeUrl(value) {
+  return /^[a-z][a-z0-9+.-]*:\/\//i.test(value)
+    || /^(www\.)?[a-z0-9-]+(\.[a-z0-9-]+)+([/:?#]|$)/i.test(value);
 }
 
 function ensureListening() {
@@ -533,20 +552,17 @@ function ensureRefresh() {
   }, 10 * 60 * 1000);
 }
 
-async function switchChannel(name) {
-  const next = normalizeChannel(name);
-  if (!/^[a-z0-9_]{3,25}$/.test(next)) {
-    throw new Error('Неверный логин канала');
-  }
-
+async function switchChannel(next, id) {
   await ensureListening();
+  if (id !== runId) return { superseded: true };
 
   if (irc) {
     const old = irc;
     irc = null;
     old.removeAllListeners();
-    try { await old.disconnect(); } catch (err) {}
+    old.disconnect().catch(() => {});
   }
+  if (id !== runId) return { superseded: true };
 
   channel = next;
   ircUp = false;
@@ -555,17 +571,21 @@ async function switchChannel(name) {
   clearChat();
   ensureRefresh();
   await loadAssets();
+  if (id !== runId) return { superseded: true };
 
-  irc = new tmi.Client({
+  const client = new tmi.Client({
     options: { skipUpdatingEmotesets: true },
     connection: { reconnect: true, secure: true },
     channels: [channel]
   });
-  bindIrc(irc);
+  if (id !== runId) return { superseded: true };
+  irc = client;
+  bindIrc(client);
 
   try {
-    await irc.connect();
+    await client.connect();
   } catch (err) {
+    if (id !== runId) return { superseded: true };
     ircProblem = 'чат не подключился: ' + err.message;
     console.error(ircProblem);
     publishStatus();
@@ -574,13 +594,25 @@ async function switchChannel(name) {
     throw error;
   }
 
+  if (id !== runId) return { superseded: true };
   return { url: 'http://localhost:' + port, channel };
 }
 
 function startChannel(name) {
-  const run = queue.then(() => switchChannel(name));
-  queue = run.then(() => {}, () => {});
-  return run;
+  const next = normalizeChannel(name);
+  const id = ++runId;
+  return switchChannel(next, id);
+}
+
+async function stopChannel() {
+  runId += 1;
+  const old = irc;
+  irc = null;
+  ircUp = false;
+  ircProblem = '';
+  if (!old) return;
+  old.removeAllListeners();
+  try { await old.disconnect(); } catch (err) {}
 }
 
 if (require.main === module) {
@@ -591,4 +623,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { startChannel, port, normalizeChannel };
+module.exports = { startChannel, stopChannel, port, normalizeChannel };

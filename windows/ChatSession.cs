@@ -80,9 +80,15 @@ public sealed class ChatSession : IDisposable
 
     public async Task<StartResult> StartAsync(string input)
     {
-        var next = Normalize(input);
-        if (!Regex.IsMatch(next, "^[a-z0-9_]{3,25}$"))
-            return new StartResult { Ok = false, Error = "Неверный логин канала" };
+        string next;
+        try
+        {
+            next = Normalize(input);
+        }
+        catch (Exception ex)
+        {
+            return new StartResult { Ok = false, Error = ex.Message };
+        }
 
         try
         {
@@ -142,6 +148,13 @@ public sealed class ChatSession : IDisposable
         catch { }
 
         return new StartResult { Ok = true, Url = Url, Channel = next };
+    }
+
+    public async Task StopAsync()
+    {
+        _ircUp = false;
+        _ircProblem = "";
+        await StopIrc();
     }
 
     public void Dispose()
@@ -755,12 +768,33 @@ public sealed class ChatSession : IDisposable
 
     static string Normalize(string input)
     {
-        var value = (input ?? "").Trim();
-        value = Regex.Replace(value, @"^https?://", "", RegexOptions.IgnoreCase);
-        value = Regex.Replace(value, @"^(www\.)?twitch\.tv/", "", RegexOptions.IgnoreCase);
-        var cut = value.IndexOfAny(new[] { '/', '?', '#' });
-        if (cut >= 0) value = value[..cut];
-        return value.TrimStart('#').ToLowerInvariant();
+        var raw = (input ?? "").Trim();
+        if (raw.Length == 0) throw new Exception("Введи канал");
+
+        var login = raw;
+        if (LooksLikeUrl(raw))
+        {
+            var withoutScheme = Regex.Replace(raw, @"^[a-z][a-z0-9+.-]*://", "", RegexOptions.IgnoreCase);
+            var host = withoutScheme.Split('/', '?', '#')[0];
+            if (host.StartsWith("www.", StringComparison.OrdinalIgnoreCase)) host = host[4..];
+            host = host.ToLowerInvariant();
+            if (host != "twitch.tv" && !host.EndsWith(".twitch.tv", StringComparison.Ordinal))
+                throw new Exception("Это не ссылка Twitch");
+            var slash = withoutScheme.IndexOf('/');
+            login = slash >= 0 ? withoutScheme[(slash + 1)..] : "";
+        }
+
+        var cut = login.IndexOfAny(['/', '?', '#']);
+        if (cut >= 0) login = login[..cut];
+        login = login.TrimStart('#').ToLowerInvariant();
+        if (!Regex.IsMatch(login, "^[a-z0-9_]{3,25}$")) throw new Exception("Неверный логин канала");
+        return login;
+    }
+
+    static bool LooksLikeUrl(string value)
+    {
+        if (Regex.IsMatch(value, @"^[a-z][a-z0-9+.-]*://", RegexOptions.IgnoreCase)) return true;
+        return Regex.IsMatch(value, @"^(www\.)?[a-z0-9-]+(\.[a-z0-9-]+)+([/:?#]|$)", RegexOptions.IgnoreCase);
     }
 }
 
