@@ -52,6 +52,7 @@ body {
 
 .time {
   margin-right: 10px;
+  font-size: 41px;
   color: rgba(210, 210, 210, 0.78);
   vertical-align: middle;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.75);
@@ -92,6 +93,7 @@ body {
 }
 
 .nick {
+  font-size: 41px;
   font-weight: 700;
   margin-right: 4px;
   vertical-align: middle;
@@ -119,6 +121,7 @@ body {
 }
 
 .text {
+  font-size: 41px;
   color: #fff;
   vertical-align: middle;
   text-shadow:
