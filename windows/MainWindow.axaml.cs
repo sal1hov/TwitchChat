@@ -43,6 +43,21 @@ public partial class MainWindow : Window
         base.OnClosing(e);
     }
 
+    void TitleBarPointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        // Не перехватываем нажатия на кнопки управления окном.
+        if (e.Source is Button) return;
+        if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+            BeginMoveDrag(e);
+    }
+
+    void MinimizeClick(object? sender, RoutedEventArgs e)
+    {
+        WindowState = WindowState.Minimized;
+    }
+
+    void CloseClick(object? sender, RoutedEventArgs e) => Close();
+
     void QuitClick(object? sender, RoutedEventArgs e) => App.Quit();
 
     void StartClick(object? sender, RoutedEventArgs e)

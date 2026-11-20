@@ -1,7 +1,7 @@
 const { app, BrowserWindow, Tray, Menu, clipboard, nativeImage, ipcMain, shell } = require('electron');
 const fs = require('fs');
 const path = require('path');
-const { startChannel, stopChannel, port } = require('./server');
+const { startChannel, stopChannel, setAppearance, port } = require('./server');
 
 let win = null;
 let tray = null;
@@ -61,10 +61,12 @@ function showWindow() {
 
 function createWindow() {
   win = new BrowserWindow({
-    width: 420,
-    height: 560,
+    width: 940,
+    height: 700,
+    frame: false,
     resizable: false,
-    backgroundColor: '#0e0e10',
+    maximizable: false,
+    backgroundColor: '#0d0b18',
     title: 'ChatServer',
     show: false,
     webPreferences: {
@@ -85,14 +87,30 @@ function createWindow() {
   });
 }
 
+ipcMain.handle('window-minimize', () => {
+  if (win && !win.isDestroyed()) win.minimize();
+});
+
+ipcMain.handle('window-close', () => {
+  if (win && !win.isDestroyed()) win.close();
+});
+
 ipcMain.handle('get-channel', () => readSettings().channel || '');
+
+ipcMain.handle('get-appearance', () => readSettings().appearance || {});
+
+ipcMain.handle('set-appearance', (event, params) => {
+  const clean = setAppearance(params);
+  writeSettings({ ...readSettings(), appearance: clean });
+  return clean;
+});
 
 ipcMain.handle('start', async (event, channel) => {
   try {
     const result = await startChannel(channel);
     if (result && result.superseded) return { ok: true, superseded: true };
     obsUrl = result.url;
-    writeSettings({ channel: result.channel });
+    writeSettings({ ...readSettings(), channel: result.channel });
     refreshTray();
     return { ok: true, url: result.url, channel: result.channel };
   } catch (err) {
@@ -125,6 +143,8 @@ ipcMain.handle('version', () => app.getVersion().replace(/\.0$/, ''));
 
 ipcMain.handle('open-author', () => shell.openExternal('https://github.com/strdns'));
 
+ipcMain.handle('open-authorfork', () => shell.openExternal('https://github.com/sal1hov'));
+
 const gotLock = app.requestSingleInstanceLock();
 if (!gotLock) {
   app.quit();
@@ -132,6 +152,8 @@ if (!gotLock) {
   app.on('second-instance', () => showWindow());
 
   app.whenReady().then(() => {
+    // Сервер должен знать сохранённое оформление ещё до первого подключения виджета
+    setAppearance(readSettings().appearance || {});
     createWindow();
     tray = new Tray(trayIcon());
     tray.setToolTip('ChatServer');

@@ -1,150 +1,927 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
   <meta charset="utf-8">
   <title>ChatServer</title>
   <style>
-    html, body {
+    :root {
+      --night: #0d0b18;
+      --ink: #f4f1ff;
+      --muted: #aaa5c8;
+      --faint: #7a7499;
+      --violet: #8b5cf6;
+      --fuchsia: #d946ef;
+      --amber: #fbbf24;
+      --mint: #3ee0a0;
+      --rose: #ff6b86;
+      --line: rgba(255, 255, 255, 0.10);
+      --line-strong: rgba(255, 255, 255, 0.20);
+      --glass: rgba(255, 255, 255, 0.055);
+      --grad: linear-gradient(135deg, #8b5cf6 0%, #d946ef 100%);
+      --font: "Segoe UI Variable Display", "Segoe UI", system-ui, -apple-system, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    /* ---------- Кастомная системная панель окна ---------- */
+    .titlebar {
+      position: fixed;
+      z-index: 100;
+      inset: 0 0 auto;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 10px 0 16px;
+      background: rgba(13, 11, 24, 0.88);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.075);
+      backdrop-filter: blur(22px) saturate(145%);
+      -webkit-app-region: drag;
+      user-select: none;
+    }
+
+    .titlebar-brand {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      min-width: 0;
+      color: var(--ink);
+      font-size: 12.5px;
+      font-weight: 650;
+      letter-spacing: 0.015em;
+      opacity: 0.92;
+    }
+
+    .titlebar-brand img {
+      width: 20px;
+      height: 20px;
+      border-radius: 6px;
+      box-shadow: 0 2px 10px rgba(139, 92, 246, 0.35);
+    }
+
+    .titlebar-caption {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .window-controls {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      -webkit-app-region: no-drag;
+    }
+
+    .window-control {
+      width: 30px;
+      height: 28px;
+      display: grid;
+      place-items: center;
+      padding: 0;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      color: rgba(244, 241, 255, 0.72);
+      background: transparent;
+      transition: background 0.16s ease, color 0.16s ease, border-color 0.16s ease;
+    }
+
+    .window-control:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.09);
+      border-color: rgba(255, 255, 255, 0.07);
+    }
+
+    .window-control svg {
+      width: 13px;
+      height: 13px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.65;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .window-control.close:hover {
+      color: #fff;
+      background: #e54865;
+      border-color: #e54865;
+    }
+
+    .window-control .restore-icon {
+      display: none;
+    }
+
+    .window-control.is-maximized .maximize-icon {
+      display: none;
+    }
+
+    .window-control.is-maximized .restore-icon {
+      display: block;
+    }
+
+    @media (max-width: 760px) {
+      .app {
+        padding-left: 20px;
+        padding-right: 20px;
+      }
+
+      .grid {
+        grid-template-columns: 320px minmax(0, 1fr);
+        gap: 14px;
+      }
+    }
+
+    html,
+    body {
       margin: 0;
       height: 100%;
-      background: #0e0e10;
-      color: #efeff1;
-      font-family: Inter, "Segoe UI", sans-serif;
+      overflow: hidden;
+      background: var(--night);
+      color: var(--ink);
+      font-family: var(--font);
     }
-    main {
-      box-sizing: border-box;
+
+    button {
+      font: inherit;
+      color: inherit;
+      border: 0;
+      cursor: pointer;
+    }
+
+    button:focus-visible,
+    a:focus-visible {
+      outline: 2px solid #c4b5fd;
+      outline-offset: 2px;
+    }
+
+    /* Фон: два мягких пятна света и лёгкое зерно, чтобы стекло было на чём лежать */
+    .glow {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .glow i {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(100px);
+      will-change: transform;
+    }
+
+    .glow i:nth-child(1) {
+      width: 560px;
+      height: 560px;
+      left: -160px;
+      top: -200px;
+      background: #6d28d9;
+      opacity: 0.5;
+      animation: drift-a 26s ease-in-out infinite alternate;
+    }
+
+    .glow i:nth-child(2) {
+      width: 480px;
+      height: 480px;
+      right: -160px;
+      bottom: -180px;
+      background: #be185d;
+      opacity: 0.34;
+      animation: drift-b 30s ease-in-out infinite alternate;
+    }
+
+    @keyframes drift-a {
+      to {
+        transform: translate(140px, 110px) scale(1.12);
+      }
+    }
+
+    @keyframes drift-b {
+      to {
+        transform: translate(-120px, -90px) scale(1.1);
+      }
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      opacity: 0.07;
+      mix-blend-mode: overlay;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+    }
+
+    .app {
+      position: relative;
+      z-index: 2;
       height: 100%;
-      padding: 36px 28px 28px;
+      /* Отступ сверху учитывает кастомную панель окна (44px) и зазор. */
+      padding: 66px 32px 20px;
       display: flex;
       flex-direction: column;
+      gap: 22px;
+    }
+
+    /* ---------- Шапка ---------- */
+
+    .top {
+      flex: none;
+      display: flex;
       align-items: center;
+      justify-content: space-between;
+      gap: 16px;
     }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
     .logo {
-      width: 84px;
-      height: 84px;
-      border-radius: 20px;
+      width: 46px;
+      height: 46px;
+      border-radius: 13px;
+      box-shadow: 0 8px 28px rgba(139, 92, 246, 0.55);
     }
-    .tagline {
-      margin: 14px 0 6px;
-      color: #adadb8;
-      font-size: 16px;
-      text-align: center;
+
+    .brand-name {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
     }
-    #help-open {
-      margin: 0 0 22px;
-      padding: 0;
-      background: none;
-      color: #bf94ff;
+
+    .brand-sub {
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .nav {
+      display: flex;
+      gap: 10px;
+    }
+
+    .ghost {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      height: 38px;
+      padding: 0 15px;
+      border-radius: 12px;
+      background: var(--glass);
+      border: 1px solid var(--line);
       font-size: 14px;
       font-weight: 600;
+      transition: background 0.15s, border-color 0.15s;
     }
-    #help-open:hover {
+
+    .ghost:hover {
+      background: rgba(255, 255, 255, 0.11);
+      border-color: var(--line-strong);
+    }
+
+    .ghost.hot {
+      background: rgba(139, 92, 246, 0.2);
+      border-color: rgba(167, 139, 250, 0.5);
+    }
+
+    .ghost.hot:hover {
+      background: rgba(139, 92, 246, 0.32);
+    }
+
+    .ghost.quiet:hover {
+      color: #ffc2cd;
+      border-color: rgba(255, 107, 134, 0.55);
+    }
+
+    .ico {
+      width: 18px;
+      height: 18px;
+      flex: none;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    /* ---------- Рабочая область ---------- */
+
+    .grid {
+      flex: 1;
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 372px minmax(0, 1fr);
+      gap: 22px;
+    }
+
+    .dock {
+      align-self: start;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      padding: 22px;
+      border-radius: 24px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.035));
+      border: 1px solid var(--line);
+      backdrop-filter: blur(24px) saturate(140%);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.09), 0 24px 60px rgba(0, 0, 0, 0.35);
+    }
+
+    .dock-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .dock-head h2,
+    .stage-head h2 {
+      margin: 0;
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    /* Индикатор работы чата: загорается, когда чат подключён */
+    .lamp {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 12px 5px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--muted);
+      font-size: 12.5px;
+      font-weight: 600;
+    }
+
+    .lamp i {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--faint);
+    }
+
+    .lamp.wait {
+      color: var(--amber);
+    }
+
+    .lamp.wait i {
+      background: var(--amber);
+      animation: blink 1s ease-in-out infinite;
+    }
+
+    .lamp.live {
+      color: #aef5d7;
+      border-color: rgba(62, 224, 160, 0.4);
+      background: rgba(62, 224, 160, 0.1);
+    }
+
+    .lamp.live i {
+      background: var(--mint);
+      animation: pulse 2s ease-out infinite;
+    }
+
+    @keyframes blink {
+      50% {
+        opacity: 0.25;
+      }
+    }
+
+    @keyframes pulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(62, 224, 160, 0.65);
+      }
+
+      70%,
+      100% {
+        box-shadow: 0 0 0 9px rgba(62, 224, 160, 0);
+      }
+    }
+
+    .lbl {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .field {
+      display: flex;
+      align-items: center;
+      height: 50px;
+      border-radius: 14px;
+      background: rgba(6, 5, 14, 0.55);
+      border: 1px solid var(--line);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .field:focus-within {
+      border-color: rgba(167, 139, 250, 0.85);
+      box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.22);
+    }
+
+    .prefix {
+      padding-left: 16px;
+      color: var(--faint);
+      font-size: 15px;
+      white-space: nowrap;
+    }
+
+    .field input {
+      flex: 1;
+      min-width: 0;
+      height: 100%;
+      padding: 0 16px 0 2px;
+      border: 0;
+      outline: none;
+      background: none;
+      color: var(--ink);
+      font: inherit;
+      font-size: 16px;
+    }
+
+    .field input::placeholder {
+      color: #5d577d;
+    }
+
+    .primary {
+      height: 50px;
+      border-radius: 14px;
+      background: var(--grad);
+      color: #fff;
+      font-size: 16px;
+      font-weight: 700;
+      box-shadow: 0 10px 30px rgba(168, 85, 247, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.28);
+      transition: transform 0.15s, box-shadow 0.2s, filter 0.2s;
+    }
+
+    .primary:hover:not(:disabled) {
+      transform: translateY(-1px);
+      filter: brightness(1.08);
+      box-shadow: 0 14px 38px rgba(168, 85, 247, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.28);
+    }
+
+    .primary:active:not(:disabled) {
+      transform: scale(0.99);
+    }
+
+    .primary:disabled {
+      opacity: 0.45;
+      cursor: default;
+      box-shadow: none;
+    }
+
+    .primary.stop {
+      background: rgba(255, 107, 134, 0.13);
+      border: 1px solid rgba(255, 107, 134, 0.55);
+      color: #ffc2cd;
+      box-shadow: none;
+    }
+
+    .primary.busy::before {
+      content: "";
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      margin-right: 10px;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, 0.35);
+      border-top-color: #fff;
+      vertical-align: -2px;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    #error {
+      color: var(--rose);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    #error:empty {
+      display: none;
+    }
+
+    #linkbox {
+      display: none;
+      flex-direction: column;
+      gap: 8px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+    }
+
+    #linkbox.show {
+      display: flex;
+    }
+
+    .linkrow {
+      position: relative;
+    }
+
+    #link {
+      width: 100%;
+      height: 46px;
+      padding: 0 52px 0 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(62, 224, 160, 0.32);
+      background: rgba(62, 224, 160, 0.07);
+      color: #c3f7e0;
+      font-family: Consolas, "Cascadia Mono", monospace;
+      font-size: 14px;
+      outline: none;
+    }
+
+    #copy {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      width: 36px;
+      height: 36px;
+      display: grid;
+      place-items: center;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--muted);
+      transition: background 0.15s, color 0.15s;
+    }
+
+    #copy:hover {
+      background: rgba(255, 255, 255, 0.16);
+      color: var(--ink);
+    }
+
+    #copy .done-ico {
+      display: none;
+    }
+
+    #copy.done {
+      color: var(--mint);
+    }
+
+    #copy.done .copy-ico {
+      display: none;
+    }
+
+    #copy.done .done-ico {
+      display: block;
+    }
+
+    .hint {
+      margin: 0;
+      color: var(--faint);
+      font-size: 12.5px;
+      line-height: 1.45;
+    }
+
+    /* ---------- Сцена с предпросмотром ---------- */
+
+    .stage {
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      padding: 18px 18px 14px;
+      border-radius: 30px;
+      background: rgba(10, 8, 22, 0.55);
+      border: 1px solid var(--line);
+      backdrop-filter: blur(24px);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 24px 60px rgba(0, 0, 0, 0.35);
+      transition: border-color 0.4s, box-shadow 0.4s;
+    }
+
+    body.is-live .stage {
+      border-color: rgba(62, 224, 160, 0.4);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 0 0 1px rgba(62, 224, 160, 0.15), 0 0 60px rgba(62, 224, 160, 0.16);
+    }
+
+    .stage-head {
+      flex: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 0 4px;
+    }
+
+    .home-preview {
+      position: relative;
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+      border-radius: 18px;
+      background:
+        linear-gradient(135deg, rgba(76, 29, 149, 0.5), rgba(190, 24, 93, 0.38) 60%, rgba(8, 145, 178, 0.34)),
+        repeating-conic-gradient(#3a3556 0 25%, #2c2842 0 50%) 0 0 / 22px 22px;
+    }
+
+    .home-preview iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      border: 0;
+      background: transparent;
+      transform-origin: top left;
+      pointer-events: none;
+    }
+
+    /* ---------- Подвал ---------- */
+
+    .foot {
+      flex: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      color: var(--faint);
+      font-size: 13px;
+    }
+
+    .foot-info {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 6px;
+    }
+
+    .credit-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .ver {
+      padding: 1px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--muted);
+      font-size: 11.5px;
+      font-weight: 600;
+    }
+
+    .ver-fork,
+    .ver-original {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      border-color: rgba(217, 70, 239, 0.45);
+      background: rgba(217, 70, 239, 0.12);
+      color: #f0b6fa;
+      cursor: help;
+      outline: none;
+    }
+
+    /* Кастомная подсказка вместо стандартного браузерного title */
+    .ver-fork::after,
+    .ver-original::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      z-index: 20;
+      left: 50%;
+      bottom: calc(100% + 10px);
+      transform: translate(-50%, 4px);
+      padding: 7px 11px;
+      border: 1px solid rgba(167, 139, 250, 0.28);
+      border-radius: 8px;
+      background: #211b35;
+      color: #f4f0ff;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.32);
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 1.2;
+      white-space: nowrap;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 140ms ease, transform 140ms ease, visibility 140ms ease;
+    }
+
+    .ver-fork::before,
+    .ver-original::before {
+      content: "";
+      position: absolute;
+      z-index: 21;
+      left: 50%;
+      bottom: calc(100% + 4px);
+      width: 7px;
+      height: 7px;
+      border-right: 1px solid rgba(167, 139, 250, 0.28);
+      border-bottom: 1px solid rgba(167, 139, 250, 0.28);
+      background: #211b35;
+      transform: translate(-50%, 4px) rotate(45deg);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 140ms ease, transform 140ms ease, visibility 140ms ease;
+    }
+
+    .ver-fork:hover::after,
+    .ver-fork:focus-visible::after,
+    .ver-fork:hover::before,
+    .ver-fork:focus-visible::before,
+    .ver-original:hover::after,
+    .ver-original:focus-visible::after,
+    .ver-original:hover::before,
+    .ver-original:focus-visible::before {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .ver-fork:hover::after,
+    .ver-fork:focus-visible::after,
+    .ver-original:hover::after,
+    .ver-original:focus-visible::after {
+      transform: translate(-50%, 0);
+    }
+
+    .ver-fork:hover::before,
+    .ver-fork:focus-visible::before,
+    .ver-original:hover::before,
+    .ver-original:focus-visible::before {
+      transform: translate(-50%, 0) rotate(45deg);
+    }
+
+    #author,
+    #authorfork {
+      color: #c4b5fd;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    #author:hover,
+    #authorfork:hover {
       color: #fff;
     }
+
+    /* Одно появление при запуске: сначала панель, потом сцена */
+    @keyframes rise {
+      from {
+        opacity: 0;
+        transform: translateY(14px);
+      }
+
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    .dock {
+      animation: rise 0.5s ease-out both;
+    }
+
+    .stage {
+      animation: rise 0.5s 0.12s ease-out both;
+    }
+
+    /* ---------- Справка ---------- */
+
     #help {
       display: none;
       position: fixed;
       inset: 0;
-      z-index: 2;
-      box-sizing: border-box;
-      padding: 22px 20px 18px;
-      background: #0e0e10;
-      overflow: auto;
+      z-index: 20;
+      align-items: center;
+      justify-content: center;
+      padding: 28px;
+      background: rgba(6, 5, 12, 0.72);
+      backdrop-filter: blur(12px);
     }
+
     #help.show {
       display: flex;
-      flex-direction: column;
-      overflow: hidden;
     }
-    #help .steps {
-      flex: 1;
+
+    .help-card {
+      width: 100%;
+      max-width: 560px;
+      max-height: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      padding: 26px;
+      border-radius: 26px;
+      background: #15122a;
+      border: 1px solid var(--line-strong);
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+    }
+
+    .help-card h1 {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .steps {
+      display: grid;
+      gap: 12px;
+      min-height: 0;
       overflow: auto;
     }
-    #help h1 {
-      margin: 0 0 14px;
-      font-size: 20px;
-      font-weight: 700;
-    }
+
     .step {
       display: flex;
-      gap: 12px;
-      margin-bottom: 12px;
-      padding: 12px;
-      border-radius: 8px;
-      background: #18181b;
+      gap: 14px;
+      padding: 14px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.045);
+      border: 1px solid var(--line);
     }
+
     .num {
-      flex: 0 0 28px;
-      height: 28px;
-      border-radius: 14px;
-      background: #9146ff;
-      color: #fff;
+      flex: 0 0 32px;
+      height: 32px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--grad);
       font-size: 14px;
       font-weight: 700;
-      line-height: 28px;
-      text-align: center;
     }
+
     .step h2 {
-      margin: 2px 0 4px;
+      margin: 3px 0 4px;
       font-size: 15px;
     }
+
     .step p {
       margin: 0;
-      color: #adadb8;
+      color: var(--muted);
       font-size: 13px;
-      line-height: 1.35;
+      line-height: 1.4;
     }
+
     .mock {
-      margin-top: 8px;
-      border-radius: 6px;
-      background: #0e0e10;
+      margin-top: 10px;
+      padding: 2px 0;
+      border-radius: 10px;
+      background: rgba(0, 0, 0, 0.3);
       overflow: hidden;
     }
-    .mock .field,
-    .mock .btn {
+
+    .mk-field,
+    .mk-btn,
+    .mk-link {
       height: 22px;
       margin: 8px;
-      border-radius: 4px;
+      border-radius: 6px;
     }
-    .mock .field {
-      background: #18181b;
+
+    .mk-field {
+      background: rgba(255, 255, 255, 0.08);
     }
-    .mock .btn {
-      background: #9146ff;
+
+    .mk-btn {
+      background: var(--grad);
     }
-    .mock .link {
-      height: 22px;
-      margin: 8px;
-      border-radius: 4px;
-      background: #18181b;
+
+    .mk-link {
       position: relative;
+      background: rgba(62, 224, 160, 0.14);
     }
-    .mock .link::after {
+
+    .mk-link::after {
       content: "";
       position: absolute;
       top: 4px;
       right: 4px;
       width: 14px;
       height: 14px;
-      border-radius: 3px;
-      background: #3a3a3d;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.25);
     }
+
     .obs {
+      position: relative;
       height: 72px;
       margin: 8px;
-      border-radius: 6px;
-      background: linear-gradient(160deg, #2a2a2e, #121214);
-      position: relative;
+      border-radius: 8px;
+      background: linear-gradient(160deg, #2a2745, #12101f);
     }
+
     .obs .chat {
       position: absolute;
       left: 8px;
       right: 8px;
       bottom: 8px;
       padding: 6px;
-      border-radius: 4px;
+      border-radius: 6px;
       background: rgba(0, 0, 0, 0.55);
     }
+
     .obs .chat i {
       display: block;
       height: 4px;
@@ -152,184 +929,214 @@
       border-radius: 2px;
       background: #fff;
     }
-    .obs .chat i:first-child { margin-top: 0; width: 70%; }
-    .obs .chat i:nth-child(2) { width: 46%; background: #ff4d4d; }
-    .obs .chat i:nth-child(3) { width: 58%; }
+
+    .obs .chat i:first-child {
+      margin-top: 0;
+      width: 70%;
+    }
+
+    .obs .chat i:nth-child(2) {
+      width: 46%;
+      background: #ff6b86;
+    }
+
+    .obs .chat i:nth-child(3) {
+      width: 58%;
+    }
+
     #help-close {
       flex: none;
-      width: 100%;
-      height: 40px;
-      margin-top: 8px;
-      background: #9146ff;
-      color: #fff;
     }
-    .stack {
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    input {
-      width: 100%;
-      box-sizing: border-box;
-      height: 44px;
-      padding: 0 14px;
-      border: 2px solid transparent;
-      border-radius: 4px;
-      background: #18181b;
-      color: #efeff1;
-      font-size: 16px;
-    }
-    input:focus {
-      outline: none;
-      border-color: #9146ff;
-    }
-    input::placeholder {
-      color: #53535f;
-    }
-    button {
-      border: 0;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 15px;
-      font-weight: 600;
-    }
-    #start {
-      height: 40px;
-      background: #9146ff;
-      color: #fff;
-    }
-    #start:hover {
-      background: #772ce8;
-    }
-    #start:disabled {
-      opacity: 0.6;
-      cursor: default;
-    }
-    #quit {
-      height: 40px;
-      background: #eb0400;
-      color: #fff;
-    }
-    #quit:hover {
-      background: #c20800;
-    }
-    #error {
-      min-height: 18px;
-      color: #eb0400;
-      font-size: 13px;
-    }
-    #linkbox {
-      display: none;
-      position: relative;
-    }
-    #linkbox.show {
-      display: block;
-    }
-    #link {
-      padding-right: 46px;
-    }
-    #copy {
-      position: absolute;
-      top: 4px;
-      right: 4px;
-      width: 36px;
-      height: 36px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: transparent;
-      color: #adadb8;
-    }
-    #copy:hover {
-      background: #26262c;
-      color: #efeff1;
-    }
-    #copy svg {
-      width: 18px;
-      height: 18px;
-      fill: currentColor;
-    }
-    footer {
-      margin-top: auto;
-      color: #53535f;
-      font-size: 12px;
-      text-align: center;
-      line-height: 1.5;
-    }
-    #author {
-      padding: 0;
-      background: none;
-      color: #bf94ff;
-      font-size: 12px;
-      font-weight: 600;
-      text-decoration: none;
-    }
-    #author:hover {
-      color: #fff;
+
+    @media (prefers-reduced-motion: reduce) {
+
+      .glow i,
+      .dock,
+      .stage,
+      .lamp i,
+      .primary.busy::before {
+        animation: none;
+      }
     }
   </style>
+  <link rel="stylesheet" href="settings.css">
 </head>
+
 <body>
-  <main>
-    <img class="logo" src="assets/icon.png" alt="">
-    <div class="tagline">Локальный чат для OBS</div>
-    <button id="help-open" type="button">Как это работает</button>
-    <div class="stack">
-      <input id="channel" placeholder="Канал или ссылка" autocomplete="off" spellcheck="false">
-      <button id="start" type="button" disabled>Старт</button>
-      <button id="quit" type="button">Выход</button>
-      <div id="error"></div>
-      <div id="linkbox">
-        <input id="link" readonly aria-label="Ссылка для OBS">
-        <button id="copy" type="button" title="Скопировать" aria-label="Скопировать">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
-          </svg>
-        </button>
-      </div>
+  <div class="titlebar">
+    <div class="titlebar-brand">
+      <img src="assets/icon.png" alt="">
+      <span class="titlebar-caption">ChatServer</span>
     </div>
-    <footer>
-      <div id="version">2.1</div>
-      <div>development by <a id="author" href="https://github.com/strdns">strdns</a></div>
+    <div class="window-controls" aria-label="Управление окном">
+      <button class="window-control" id="window-minimize" type="button" aria-label="Свернуть" title="Свернуть">
+        <svg viewBox="0 0 16 16" aria-hidden="true">
+          <path d="M3 8h10" />
+        </svg>
+      </button>
+      <button class="window-control close" id="window-close" type="button" aria-label="Закрыть" title="Закрыть">
+        <svg viewBox="0 0 16 16" aria-hidden="true">
+          <path d="m4 4 8 8M12 4l-8 8" />
+        </svg>
+      </button>
+    </div>
+  </div>
+  <div class="glow" aria-hidden="true"><i></i><i></i></div>
+
+  <main class="app">
+    <header class="top">
+      <div class="brand">
+        <img class="logo" src="assets/icon.png" alt="">
+        <div>
+          <div class="brand-name">ChatServer</div>
+          <div class="brand-sub">Локальный чат для OBS</div>
+        </div>
+      </div>
+      <nav class="nav">
+        <button id="help-open" class="ghost" type="button">
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="9" />
+            <path d="M9.6 9.4a2.5 2.5 0 1 1 3.6 2.2c-.8.4-1.2 1-1.2 1.9" />
+            <path d="M12 17h.01" />
+          </svg>
+          Как это работает
+        </button>
+        <button id="settings-open" class="ghost hot" type="button">
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 7h9M17 7h3M4 17h3M11 17h9" />
+            <circle cx="15" cy="7" r="2" />
+            <circle cx="9" cy="17" r="2" />
+          </svg>
+          Настройки
+        </button>
+      </nav>
+    </header>
+
+    <section class="grid">
+      <div class="dock">
+        <div class="dock-head">
+          <h2>Подключение</h2>
+          <span id="lamp" class="lamp"><i></i><span id="lamp-text">Чат выключен</span></span>
+        </div>
+
+        <label class="lbl" for="channel">Канал Twitch</label>
+        <div class="field">
+          <span class="prefix">twitch.tv/</span>
+          <input id="channel" placeholder="название или ссылка" autocomplete="off" spellcheck="false">
+        </div>
+
+        <button id="start" class="primary" type="button" disabled>Старт</button>
+        <div id="error"></div>
+
+        <div id="linkbox">
+          <div class="lbl">Ссылка для OBS</div>
+          <div class="linkrow">
+            <input id="link" readonly aria-label="Ссылка для OBS">
+            <button id="copy" type="button" title="Скопировать" aria-label="Скопировать">
+              <svg class="ico copy-ico" viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="9" y="9" width="11" height="11" rx="2" />
+                <path d="M5 15V6a2 2 0 0 1 2-2h9" />
+              </svg>
+              <svg class="ico done-ico" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="m5 12.5 4.5 4.5L19 7.5" />
+              </svg>
+            </button>
+          </div>
+          <p class="hint">Вставь её в OBS как источник «Браузер».</p>
+        </div>
+      </div>
+
+      <div class="stage">
+        <div class="stage-head">
+          <h2>Так выглядит чат</h2>
+          <button id="preview-edit" class="ghost" type="button">Настроить</button>
+        </div>
+        <div class="home-preview" id="home-preview">
+          <iframe id="home-frame" src="public/index.html?demo=1" title="Предпросмотр чата"></iframe>
+        </div>
+        <p class="hint">Здесь тестовые сообщения. Настоящие появятся в OBS после старта.</p>
+      </div>
+    </section>
+
+    <footer class="foot">
+      <div class="foot-info">
+        <div class="credit-row">
+          <span>development by <a id="author" href="https://github.com/strdns">strdns</a></span>
+          <span class="ver ver-original" data-tooltip="Версия оригинального проекта"
+            aria-label="Версия оригинального проекта" tabindex="0">v<span id="version">2.1</span></span>
+        </div>
+        <div class="credit-row">
+          <span>fork by <a id="authorfork" href="https://github.com/sal1hov">whosed</a></span>
+          <span class="ver ver-fork" data-tooltip="Версия форка" aria-label="Версия форка" tabindex="0">beta 0.1</span>
+        </div>
+      </div>
+      <button id="quit" class="ghost quiet" type="button">
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 3v8" />
+          <path d="M6.6 6.6a8 8 0 1 0 10.8 0" />
+        </svg>
+        Выход
+      </button>
     </footer>
   </main>
-  <div id="help">
-    <h1>Как это работает</h1>
-    <div class="steps">
-    <div class="step">
-      <div class="num">1</div>
-      <div>
-        <h2>Введи канал</h2>
-        <p>Логин или ссылку Twitch, потом «Старт». Чат этого канала начнёт приходить на твой компьютер.</p>
-        <div class="mock"><div class="field"></div><div class="btn"></div></div>
+
+  <div id="help" role="dialog" aria-modal="true" aria-labelledby="help-title">
+    <div class="help-card">
+      <h1 id="help-title">Как это работает</h1>
+      <div class="steps">
+        <div class="step">
+          <div class="num">1</div>
+          <div>
+            <h2>Введи канал</h2>
+            <p>Логин или ссылку Twitch, потом «Старт». Чат этого канала начнёт приходить на твой компьютер.</p>
+            <div class="mock">
+              <div class="mk-field"></div>
+              <div class="mk-btn"></div>
+            </div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="num">2</div>
+          <div>
+            <h2>Скопируй ссылку</h2>
+            <p>Она появится слева. Кнопка справа от неё кладёт адрес в буфер.</p>
+            <div class="mock">
+              <div class="mk-link"></div>
+            </div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="num">3</div>
+          <div>
+            <h2>Вставь в OBS</h2>
+            <p>Источник «Браузер», вставь ссылку. Сообщения встанут снизу, поверх картинки стрима.</p>
+            <div class="obs">
+              <div class="chat"><i></i><i></i><i></i></div>
+            </div>
+          </div>
+        </div>
       </div>
+      <button id="help-close" class="primary" type="button">Понятно</button>
     </div>
-    <div class="step">
-      <div class="num">2</div>
-      <div>
-        <h2>Скопируй ссылку</h2>
-        <p>Она появится ниже. Кнопка справа кладёт адрес в буфер.</p>
-        <div class="mock"><div class="link"></div></div>
-      </div>
-    </div>
-    <div class="step">
-      <div class="num">3</div>
-      <div>
-        <h2>Вставь в OBS</h2>
-        <p>Источник «Браузер», вставь ссылку. Сообщения встанут снизу, поверх картинки стрима.</p>
-        <div class="obs"><div class="chat"><i></i><i></i><i></i></div></div>
-      </div>
-    </div>
-    </div>
-    <button id="help-close" type="button">Понятно</button>
   </div>
+
   <script>
     const channelInput = document.getElementById('channel');
     const startButton = document.getElementById('start');
     const errorBox = document.getElementById('error');
     const linkBox = document.getElementById('linkbox');
     const linkInput = document.getElementById('link');
+    const lamp = document.getElementById('lamp');
+    const lampText = document.getElementById('lamp-text');
+
+    // Собственные кнопки управления frameless-окном Electron.
+    document.getElementById('window-minimize').addEventListener('click', () => {
+      window.api?.minimizeWindow();
+    });
+    document.getElementById('window-close').addEventListener('click', () => {
+      // Сохраняем существующее поведение: крестик прячет приложение в трей.
+      window.api?.closeWindow();
+    });
 
     function showLink(url) {
       if (!url) return;
@@ -340,19 +1147,34 @@
     let mode = 'idle';
 
     function paint() {
+      startButton.className = 'primary';
+      lamp.className = 'lamp';
+
       if (mode === 'connecting') {
         startButton.textContent = 'Подключение';
         startButton.disabled = true;
+        startButton.classList.add('busy');
+        lamp.classList.add('wait');
+        lampText.textContent = 'Подключаюсь';
       } else if (mode === 'live') {
         startButton.textContent = 'Стоп';
         startButton.disabled = false;
+        startButton.classList.add('stop');
+        lamp.classList.add('live');
+        lampText.textContent = 'Чат работает';
       } else if (mode === 'stopping') {
         startButton.textContent = 'Стоп';
         startButton.disabled = true;
+        startButton.classList.add('stop');
+        lamp.classList.add('wait');
+        lampText.textContent = 'Останавливаю';
       } else {
         startButton.textContent = 'Старт';
         startButton.disabled = channelInput.value.trim() === '';
+        lampText.textContent = 'Чат выключен';
       }
+
+      document.body.classList.toggle('is-live', mode === 'live');
     }
 
     async function run() {
@@ -401,18 +1223,32 @@
     channelInput.addEventListener('keydown', (event) => {
       if (event.key === 'Enter' && mode === 'idle') run();
     });
-    document.getElementById('copy').addEventListener('click', () => {
+    document.getElementById('copy').addEventListener('click', (event) => {
       window.api.copy(linkInput.value);
+      const button = event.currentTarget;
+      button.classList.add('done');
+      setTimeout(() => button.classList.remove('done'), 1400);
     });
     document.getElementById('author').addEventListener('click', (event) => {
       if (!window.api) return;
       event.preventDefault();
       window.api.openAuthor();
     });
+    document.getElementById('authorfork').addEventListener('click', (event) => {
+      if (!window.api) return;
+      event.preventDefault();
+      window.api.openAuthorFork();
+    });
 
     const help = document.getElementById('help');
     document.getElementById('help-open').addEventListener('click', () => help.classList.add('show'));
     document.getElementById('help-close').addEventListener('click', () => help.classList.remove('show'));
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') help.classList.remove('show');
+    });
+    document.getElementById('preview-edit').addEventListener('click', () => {
+      document.getElementById('settings-open').click();
+    });
 
     if (window.api) {
       window.api.version().then((version) => {
@@ -424,6 +1260,49 @@
         run();
       });
     }
+
+    /* ---------- Предпросмотр на главной: показывает сохранённое оформление ---------- */
+
+    const homeFrame = document.getElementById('home-frame');
+    const homePreview = document.getElementById('home-preview');
+    const HOME_WIDTH = 700; // ширина «экрана» внутри предпросмотра
+    let homeParams = {};
+
+    function fitHome() {
+      const scale = homePreview.clientWidth / HOME_WIDTH;
+      if (!scale) return;
+      homeFrame.style.width = HOME_WIDTH + 'px';
+      homeFrame.style.height = Math.round(homePreview.clientHeight / scale) + 'px';
+      homeFrame.style.transform = 'scale(' + scale + ')';
+    }
+
+    function sendHome() {
+      if (homeFrame.contentWindow) {
+        homeFrame.contentWindow.postMessage({ type: 'settings', params: homeParams }, '*');
+      }
+    }
+
+    new ResizeObserver(fitHome).observe(homePreview);
+    homeFrame.addEventListener('load', () => {
+      fitHome();
+      sendHome();
+    });
+
+    // settings.js сообщает, когда настройки сохранены
+    window.addEventListener('appearance-saved', (event) => {
+      homeParams = event.detail || {};
+      sendHome();
+    });
+
+    if (window.api && window.api.getAppearance) {
+      window.api.getAppearance().then((saved) => {
+        homeParams = saved || {};
+        sendHome();
+      });
+    }
   </script>
+  <script src="public/schema.js"></script>
+  <script src="settings.js"></script>
 </body>
+
 </html>

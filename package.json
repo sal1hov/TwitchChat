@@ -32,13 +32,18 @@
       "app.html",
       "public/**/*",
       "assets/**/*",
-      "package.json"
+      "package.json",
+      "settings.js",
+      "settings.css"
     ],
     "mac": {
       "identity": null,
       "category": "public.app-category.utilities",
       "icon": "assets/icon.png",
-      "target": ["dmg", "pkg"]
+      "target": [
+        "dmg",
+        "pkg"
+      ]
     }
   }
 }

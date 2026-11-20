@@ -7,7 +7,7 @@ const { WebSocketServer } = require('ws');
 let fileConfig = {};
 try {
   fileConfig = require('./config.json');
-} catch (err) {}
+} catch (err) { }
 
 let channel = '';
 const port = Number(fileConfig.port) || 3000;
@@ -291,7 +291,7 @@ function badgesOf(tags) {
   const out = [];
   for (const piece of raw.split(',')) {
     const badge = badgeMap.get(piece);
-    if (badge) out.push(badge);
+    if (badge) out.push(Object.assign({ id: piece }, badge));
   }
   return out;
 }
@@ -382,120 +382,135 @@ app.use(express.static(path.join(__dirname, 'public'), {
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server });
 
+const APPEARANCE_KEYS = ['bg', 'op', 'color', 'font', 'size', 'outline', 'time', 'max'];
+let appearance = {};
+
+function setAppearance(next) {
+  const clean = {};
+  for (const [key, value] of Object.entries(next || {}).slice(0, 80)) {
+    if (!/^[a-z0-9_]{1,24}$/i.test(key) || value == null) continue;
+    clean[key] = String(value).slice(0, 500);
+  }
+  appearance = clean;
+  sendRaw({ type: 'settings', params: appearance });
+  return appearance;
+}
+
 wss.on('connection', (socket) => {
   socket.send(JSON.stringify({
     type: 'hello',
     maxMessages,
-    history
+    history,
+    settings: appearance
   }));
 });
 
 function bindIrc(client) {
-client.on('connected', () => {
-  if (client !== irc) return;
-  ircUp = true;
-  ircProblem = '';
-  console.log('irc подключен, канал #' + channel);
-  publishStatus();
-});
-
-client.on('disconnected', (reason) => {
-  if (client !== irc) return;
-  ircUp = false;
-  ircProblem = reason ? 'чат отвалился: ' + reason : 'чат отвалился';
-  console.log(ircProblem);
-  publishStatus();
-});
-
-client.on('reconnect', () => {
-  if (client !== irc) return;
-  ircUp = false;
-  ircProblem = 'переподключаюсь к чату';
-  publishStatus();
-});
-
-client.on('message', (chan, tags, message, self) => {
-  if (client !== irc || self || tags['message-type'] === 'whisper') return;
-  emitUser(tags, tags.username, parseParts(message, tags.emotes), {
-    action: tags['message-type'] === 'action',
-    flags: flagsOf(tags),
-    reply: replyOf(tags)
+  client.on('connected', () => {
+    if (client !== irc) return;
+    ircUp = true;
+    ircProblem = '';
+    console.log('irc подключен, канал #' + channel);
+    publishStatus();
   });
-});
 
-client.on('subscription', (chan, username, methods, message, tags) => {
-  emitUser(tags, username, withMessage(joinBits(['подписка', tierLabel(methods)]), message, tags.emotes));
-});
-
-client.on('resub', (chan, username, streakMonths, message, tags, methods) => {
-  const months = tagNumber(tags['msg-param-cumulative-months']);
-  const label = joinBits([months ? months + ' мес.' : '', tierLabel(methods)]) || 'ресуб';
-  emitUser(tags, username, withMessage(label, message, tags.emotes));
-});
-
-client.on('subgift', (chan, username, streakMonths, recipient, methods, tags) => {
-  emitUser(tags, username, [{
-    type: 'text',
-    text: joinBits(['подарок', recipient, tierLabel(methods)])
-  }]);
-});
-
-client.on('anonsubgift', (chan, streakMonths, recipient, methods, tags) => {
-  emitUser(tags, 'Аноним', [{
-    type: 'text',
-    text: joinBits(['подарок', recipient, tierLabel(methods)])
-  }], { displayName: 'Аноним', badges: [] });
-});
-
-client.on('submysterygift', (chan, username, giftSubCount, methods, tags) => {
-  emitUser(tags, username, [{
-    type: 'text',
-    text: joinBits([giftedLabel(giftSubCount || 0), tierLabel(methods)])
-  }]);
-});
-
-client.on('anonsubmysterygift', (chan, giftSubCount, methods, tags) => {
-  emitUser(tags, 'Аноним', [{
-    type: 'text',
-    text: joinBits([giftedLabel(giftSubCount || 0), tierLabel(methods)])
-  }], { displayName: 'Аноним', badges: [] });
-});
-
-client.on('giftpaidupgrade', (chan, username, sender, tags) => {
-  emitUser(tags, username, [{
-    type: 'text',
-    text: sender ? 'подарок от ' + sender + ' продлён' : 'подарок продлён'
-  }]);
-});
-
-client.on('anongiftpaidupgrade', (chan, username, tags) => {
-  emitUser(tags, username, [{ type: 'text', text: 'анонимный подарок продлён' }]);
-});
-
-client.on('primepaidupgrade', (chan, username, methods, tags) => {
-  emitUser(tags, username, [{
-    type: 'text',
-    text: 'Prime → ' + (tierLabel(methods) || 'платная')
-  }]);
-});
-
-client.on('raided', (chan, username, viewers, tags) => {
-  const user = person(tags, username);
-  emit(Object.assign(user, {
-    displayName: username || user.displayName,
-    action: false,
-    flags: ['рейд'],
-    reply: null,
-    parts: [{ type: 'text', text: viewersLabel(viewers || 0) }]
-  }));
-});
-
-client.on('usernotice', (msgid, chan, tags, message) => {
-  if (msgid !== 'announcement') return;
-  emitUser(tags, '', parseParts(message || '', tags.emotes), {
-    flags: ['объявление'].concat(flagsOf(tags))
+  client.on('disconnected', (reason) => {
+    if (client !== irc) return;
+    ircUp = false;
+    ircProblem = reason ? 'чат отвалился: ' + reason : 'чат отвалился';
+    console.log(ircProblem);
+    publishStatus();
   });
-});
+
+  client.on('reconnect', () => {
+    if (client !== irc) return;
+    ircUp = false;
+    ircProblem = 'переподключаюсь к чату';
+    publishStatus();
+  });
+
+  client.on('message', (chan, tags, message, self) => {
+    if (client !== irc || self || tags['message-type'] === 'whisper') return;
+    emitUser(tags, tags.username, parseParts(message, tags.emotes), {
+      action: tags['message-type'] === 'action',
+      flags: flagsOf(tags),
+      reply: replyOf(tags)
+    });
+  });
+
+  client.on('subscription', (chan, username, methods, message, tags) => {
+    emitUser(tags, username, withMessage(joinBits(['подписка', tierLabel(methods)]), message, tags.emotes));
+  });
+
+  client.on('resub', (chan, username, streakMonths, message, tags, methods) => {
+    const months = tagNumber(tags['msg-param-cumulative-months']);
+    const label = joinBits([months ? months + ' мес.' : '', tierLabel(methods)]) || 'ресуб';
+    emitUser(tags, username, withMessage(label, message, tags.emotes));
+  });
+
+  client.on('subgift', (chan, username, streakMonths, recipient, methods, tags) => {
+    emitUser(tags, username, [{
+      type: 'text',
+      text: joinBits(['подарок', recipient, tierLabel(methods)])
+    }]);
+  });
+
+  client.on('anonsubgift', (chan, streakMonths, recipient, methods, tags) => {
+    emitUser(tags, 'Аноним', [{
+      type: 'text',
+      text: joinBits(['подарок', recipient, tierLabel(methods)])
+    }], { displayName: 'Аноним', badges: [] });
+  });
+
+  client.on('submysterygift', (chan, username, giftSubCount, methods, tags) => {
+    emitUser(tags, username, [{
+      type: 'text',
+      text: joinBits([giftedLabel(giftSubCount || 0), tierLabel(methods)])
+    }]);
+  });
+
+  client.on('anonsubmysterygift', (chan, giftSubCount, methods, tags) => {
+    emitUser(tags, 'Аноним', [{
+      type: 'text',
+      text: joinBits([giftedLabel(giftSubCount || 0), tierLabel(methods)])
+    }], { displayName: 'Аноним', badges: [] });
+  });
+
+  client.on('giftpaidupgrade', (chan, username, sender, tags) => {
+    emitUser(tags, username, [{
+      type: 'text',
+      text: sender ? 'подарок от ' + sender + ' продлён' : 'подарок продлён'
+    }]);
+  });
+
+  client.on('anongiftpaidupgrade', (chan, username, tags) => {
+    emitUser(tags, username, [{ type: 'text', text: 'анонимный подарок продлён' }]);
+  });
+
+  client.on('primepaidupgrade', (chan, username, methods, tags) => {
+    emitUser(tags, username, [{
+      type: 'text',
+      text: 'Prime → ' + (tierLabel(methods) || 'платная')
+    }]);
+  });
+
+  client.on('raided', (chan, username, viewers, tags) => {
+    const user = person(tags, username);
+    emit(Object.assign(user, {
+      displayName: username || user.displayName,
+      action: false,
+      flags: ['рейд'],
+      reply: null,
+      parts: [{ type: 'text', text: viewersLabel(viewers || 0) }]
+    }));
+  });
+
+  client.on('usernotice', (msgid, chan, tags, message) => {
+    if (msgid !== 'announcement') return;
+    emitUser(tags, '', parseParts(message || '', tags.emotes), {
+      flags: ['объявление'].concat(flagsOf(tags))
+    });
+  });
 }
 
 let irc = null;
@@ -560,7 +575,7 @@ async function switchChannel(next, id) {
     const old = irc;
     irc = null;
     old.removeAllListeners();
-    old.disconnect().catch(() => {});
+    old.disconnect().catch(() => { });
   }
   if (id !== runId) return { superseded: true };
 
@@ -612,7 +627,7 @@ async function stopChannel() {
   ircProblem = '';
   if (!old) return;
   old.removeAllListeners();
-  try { await old.disconnect(); } catch (err) {}
+  try { await old.disconnect(); } catch (err) { }
 }
 
 if (require.main === module) {
@@ -623,4 +638,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { startChannel, stopChannel, port, normalizeChannel };
+module.exports = { startChannel, stopChannel, port, normalizeChannel, setAppearance };

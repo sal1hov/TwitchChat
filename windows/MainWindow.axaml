@@ -2,11 +2,33 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="ChatServer.MainWindow"
         Width="420" Height="560"
+        MinWidth="380" MinHeight="500"
         CanResize="False"
+        SystemDecorations="None"
         Title="ChatServer"
         Background="#0e0e10"
         WindowStartupLocation="CenterScreen">
-  <Grid Margin="28,36,28,28" RowDefinitions="Auto,Auto,*,Auto">
+  <Grid RowDefinitions="44,*">
+    <Border x:Name="TitleBar" Grid.Row="0"
+            Background="#151225"
+            BorderBrush="#29243b"
+            BorderThickness="0,0,0,1"
+            PointerPressed="TitleBarPointerPressed">
+      <Grid ColumnDefinitions="*,Auto" Margin="14,0,8,0">
+        <StackPanel Orientation="Horizontal" Spacing="9" VerticalAlignment="Center">
+          <Image Width="20" Height="20" Source="avares://ChatServer/Assets/icon.png"/>
+          <TextBlock Text="ChatServer" Foreground="#f4f1ff"
+                     FontSize="12.5" FontWeight="SemiBold"
+                     VerticalAlignment="Center"/>
+        </StackPanel>
+        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+          <Button Classes="window-control" Content="—" Click="MinimizeClick" ToolTip.Tip="Свернуть"/>
+          <Button Classes="window-control window-close" Content="×"
+                  Click="CloseClick" ToolTip.Tip="Закрыть"/>
+        </StackPanel>
+      </Grid>
+    </Border>
+    <Grid Grid.Row="1" Margin="28,22,28,28" RowDefinitions="Auto,Auto,*,Auto">
     <StackPanel Grid.Row="0" HorizontalAlignment="Center" Spacing="0">
       <Image Width="84" Height="84" Source="avares://ChatServer/Assets/icon.png"/>
       <TextBlock Margin="0,14,0,4"
@@ -111,5 +133,6 @@
         </ScrollViewer>
       </DockPanel>
     </Border>
+    </Grid>
   </Grid>
 </Window>

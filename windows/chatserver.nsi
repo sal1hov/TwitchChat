@@ -1,4 +1,4 @@
-Unicode true
+﻿Unicode true
 !include "MUI2.nsh"
 
 !ifndef VERSION
@@ -30,7 +30,7 @@ SetCompressor lzma
 
 Section
   SetOutPath "$INSTDIR"
-  File /r "${PUBLISHDIR}/*.*"
+	File /r "${PUBLISHDIR}\*"
   CreateShortcut "$SMPROGRAMS\ChatServer.lnk" "$INSTDIR\ChatServer.exe"
   WriteUninstaller "$INSTDIR\Uninstall.exe"
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\ChatServer" "DisplayName" "ChatServer"
