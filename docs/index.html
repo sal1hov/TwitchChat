@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b0a10">
+  <meta name="description" content="TwitchChat — локальный Twitch-чат для OBS с гибкой настройкой оформления, фильтрами и поддержкой BTTV, 7TV и FFZ.">
+  <title>TwitchChat — твой чат, твои правила</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <div class="ambient ambient-one" aria-hidden="true"></div>
+  <div class="ambient ambient-two" aria-hidden="true"></div>
+
+  <header class="site-header">
+    <a class="brand" href="#top" aria-label="TwitchChat — на главную">
+      <span class="brand-mark" aria-hidden="true">t</span>
+      <span>TwitchChat</span>
+    </a>
+    <button class="menu-toggle" type="button" aria-label="Открыть меню" aria-expanded="false">
+      <span></span><span></span>
+    </button>
+    <nav class="navigation" aria-label="Основная навигация">
+      <a href="#features">Возможности</a>
+      <a href="#preview">Интерфейс</a>
+      <a href="#download">Скачать</a>
+      <a class="nav-github" href="https://github.com/sal1hov/TwitchChat" target="_blank" rel="noreferrer">GitHub <span aria-hidden="true">↗</span></a>
+    </nav>
+  </header>
+
+  <main id="top">
+    <section class="hero section-wrap">
+      <div class="hero-copy">
+        <div class="eyebrow"><span class="status-dot"></span> Локальный чат для OBS</div>
+        <h1>Твой чат.<br><span>Твои правила.</span></h1>
+        <p class="hero-lead">Удобный Twitch-чат для трансляций. Подключай любой канал, настраивай внешний вид и выводи чат в OBS — без сторонних облачных сервисов.</p>
+        <div class="hero-actions">
+          <a class="button button-primary" href="https://github.com/sal1hov/TwitchChat/releases/latest" target="_blank" rel="noreferrer">Скачать TwitchChat <span aria-hidden="true">↓</span></a>
+          <a class="button button-secondary" href="https://github.com/sal1hov/TwitchChat" target="_blank" rel="noreferrer">Исходный код <span aria-hidden="true">↗</span></a>
+        </div>
+        <div class="hero-meta">
+          <span><i class="meta-icon">⌘</i> Windows и macOS</span>
+          <span><i class="meta-icon">◈</i> Twitch · BTTV · 7TV · FFZ</span>
+        </div>
+      </div>
+
+      <div class="hero-visual">
+        <div class="visual-glow" aria-hidden="true"></div>
+        <!-- ЗАМЕНИТЬ: положи скриншот главного окна в docs/assets/main-window.png -->
+        <div class="image-placeholder hero-placeholder" role="img" aria-label="Место для скриншота главного окна TwitchChat">
+          <span class="placeholder-symbol">▧</span>
+          <strong>Скриншот главного окна</strong>
+          <code>docs/assets/main-window.png</code>
+          <small>Здесь будет интерфейс TwitchChat</small>
+        </div>
+        <div class="floating-note"><span class="note-pulse"></span> Чат подключён</div>
+        <div class="floating-tag">Свой стиль. Свои настройки.</div>
+      </div>
+    </section>
+
+    <section class="trust-strip section-wrap" aria-label="Ключевые особенности">
+      <div><strong>100%</strong><span>локальная работа</span></div>
+      <div><strong>4</strong><span>системы смайликов</span></div>
+      <div><strong>∞</strong><span>вариантов оформления</span></div>
+      <div><strong>OBS</strong><span>browser source</span></div>
+    </section>
+
+    <section class="features section-wrap" id="features">
+      <div class="section-heading">
+        <span class="eyebrow">Возможности</span>
+        <h2>Всё необходимое.<br><span>Ничего лишнего.</span></h2>
+        <p>Настрой чат под свою трансляцию — от внешнего вида до того, какие сообщения увидят зрители.</p>
+      </div>
+
+      <div class="feature-grid">
+        <article class="feature-card feature-card-large">
+          <div class="feature-icon">✳</div>
+          <h3>Полный контроль над внешним видом</h3>
+          <p>Шрифты, цвета, прозрачность, отступы, рамки, скругления и анимации. Собери оформление, которое подходит именно твоему стриму.</p>
+          <div class="mini-palette" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+        </article>
+        <article class="feature-card">
+          <div class="feature-icon">☺</div>
+          <h3>Все любимые смайлики</h3>
+          <p>Twitch, BetterTTV, 7TV и FrankerFaceZ — включай нужные наборы.</p>
+          <div class="emote-row" aria-hidden="true"><span>♥</span><span>✦</span><span>☻</span><span>✿</span></div>
+        </article>
+        <article class="feature-card">
+          <div class="feature-icon">⌕</div>
+          <h3>Фильтры и подсветка</h3>
+          <p>Скрывай ненужное и выделяй сообщения модераторов, VIP, подписчиков и выбранных пользователей.</p>
+          <div class="filter-lines" aria-hidden="true"><i></i><i></i><i></i></div>
+        </article>
+        <article class="feature-card">
+          <div class="feature-icon">↗</div>
+          <h3>Интеграция с OBS</h3>
+          <p>Добавь чат как Browser Source. Прозрачный фон позволяет аккуратно разместить его поверх трансляции.</p>
+        </article>
+        <article class="feature-card">
+          <div class="feature-icon">◉</div>
+          <h3>Любой Twitch-канал</h3>
+          <p>Укажи логин или ссылку на канал. Никакой привязки к одному заранее заданному каналу.</p>
+        </article>
+        <article class="feature-card">
+          <div class="feature-icon">⌘</div>
+          <h3>Windows и macOS</h3>
+          <p>Используй приложение на своей платформе и управляй подключением из отдельного окна.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="preview-section section-wrap" id="preview">
+      <div class="preview-copy">
+        <span class="eyebrow">Интерфейс</span>
+        <h2>Настройки под рукой.<br><span>Результат — сразу.</span></h2>
+        <p>Меняй оформление и проверяй его в предпросмотре, прежде чем выводить чат в эфир.</p>
+        <ul class="check-list">
+          <li>Пять разделов настроек</li>
+          <li>Предпросмотр оформления</li>
+          <li>Сохранение параметров между запусками</li>
+        </ul>
+      </div>
+      <div class="preview-frame">
+        <!-- ЗАМЕНИТЬ: положи скриншот настроек в docs/assets/settings.png -->
+        <div class="image-placeholder settings-placeholder" role="img" aria-label="Место для скриншота настроек TwitchChat">
+          <span class="placeholder-symbol">▧</span>
+          <strong>Скриншот окна настроек</strong>
+          <code>docs/assets/settings.png</code>
+          <small>Покажи здесь настройки и предпросмотр</small>
+        </div>
+      </div>
+    </section>
+
+    <section class="download-section section-wrap" id="download">
+      <div class="download-card">
+        <div class="download-orb" aria-hidden="true"></div>
+        <span class="eyebrow">Готов к эфиру?</span>
+        <h2>Сделай чат частью<br>своего стиля.</h2>
+        <p>Скачай TwitchChat, подключи канал и добавь виджет в OBS.</p>
+        <a class="button button-light" href="https://github.com/sal1hov/TwitchChat/releases/latest" target="_blank" rel="noreferrer">Перейти к загрузке <span aria-hidden="true">↗</span></a>
+        <span class="download-caption">Windows · macOS · Бесплатно</span>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer section-wrap">
+    <a class="brand footer-brand" href="#top"><span class="brand-mark">t</span><span>TwitchChat</span></a>
+    <span>Локальный Twitch-чат для OBS.</span>
+    <div class="footer-links">
+      <a href="https://github.com/sal1hov/TwitchChat" target="_blank" rel="noreferrer">GitHub</a>
+      <a href="https://github.com/sal1hov/TwitchChat/releases" target="_blank" rel="noreferrer">Releases</a>
+    </div>
+    <small>© <span id="year"></span> TwitchChat</small>
+  </footer>
+</body>
+</html>
