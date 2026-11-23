@@ -10,7 +10,8 @@
     "server": "node server.js",
     "build:mac": "node scripts/build-mac.js",
     "build:win": "powershell -NoProfile -ExecutionPolicy Bypass -File windows/build.ps1",
-    "build": "npm run build:mac && npm run build:win"
+    "build": "npm run build:mac && npm run build:win",
+    "build:win:nsis": "powershell -NoProfile -ExecutionPolicy Bypass -File windows/build-nsis.ps1"
   },
   "dependencies": {
     "express": "^4.21.2",

@@ -1,0 +1,192 @@
+
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Установка TwitchChat</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="window">
+    <div class="ambient ambient-one"></div>
+    <div class="ambient ambient-two"></div>
+
+    <header class="titlebar">
+      <div class="brand-mini">
+        <span class="brand-dot"></span>
+        <span>TwitchChat</span>
+        <span class="setup-label">SETUP</span>
+      </div>
+
+      <div class="window-actions">
+        <button id="minimize" aria-label="Свернуть">−</button>
+        <button id="close" aria-label="Закрыть">×</button>
+      </div>
+    </header>
+
+    <section class="content" id="welcome">
+      <div class="hero-icon">
+        <img src="../../assets/icon.png" alt="TwitchChat">
+      </div>
+
+      <div class="eyebrow">
+        <span class="eyebrow-line"></span>
+        DESKTOP APPLICATION
+      </div>
+
+      <h1>Твой чат.<br><span>Твои правила.</span></h1>
+
+      <p class="lead">
+        Установим TwitchChat и подготовим всё необходимое для работы с OBS Studio.
+      </p>
+
+      <div class="feature-row">
+        <div class="feature">
+          <span class="feature-icon">✦</span>
+          <div>
+            <b>Локальный чат</b>
+            <small>Работает на твоём ПК</small>
+          </div>
+        </div>
+
+        <div class="feature">
+          <span class="feature-icon">◈</span>
+          <div>
+            <b>OBS Ready</b>
+            <small>Виджет для Browser Source</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer">
+        <span class="version" id="version">Версия 0.1.0</span>
+        <button class="primary" id="continue">
+          Продолжить <span>→</span>
+        </button>
+      </div>
+    </section>
+
+    <section class="content hidden" id="location">
+      <div class="step-label">ШАГ 01 / 02</div>
+
+      <h2>Куда установим<br><span>TwitchChat?</span></h2>
+
+      <p class="sublead">
+        Выбери папку, в которой будет находиться приложение.
+      </p>
+
+      <label class="field-label" for="installPath">ПАПКА УСТАНОВКИ</label>
+
+      <div class="path-field">
+        <input id="installPath" spellcheck="false">
+        <button id="browse" class="browse">Обзор</button>
+      </div>
+
+      <div class="hint">
+        <span>ⓘ</span>
+        Настройки и пользовательские данные приложения не будут удалены при обновлении.
+      </div>
+
+      <div class="footer">
+        <button class="secondary" id="back">← Назад</button>
+        <button class="primary" id="install">
+          Установить <span>→</span>
+        </button>
+      </div>
+    </section>
+
+    <section class="content hidden" id="progress">
+      <div class="step-label">УСТАНОВКА</div>
+
+      <h2>Почти готово<span>.</span></h2>
+
+      <p class="sublead" id="progressMessage">
+        Подготавливаем файлы приложения…
+      </p>
+
+      <div class="progress-wrap">
+        <div class="progress-meta">
+          <span id="progressStage">Подготовка</span>
+          <b id="progressPercent">0%</b>
+        </div>
+
+        <div class="progress-track">
+          <div id="progressBar"></div>
+        </div>
+      </div>
+
+      <div class="install-log">
+        <span class="pulse"></span>
+        <span id="progressDetail">Инициализация установщика</span>
+      </div>
+    </section>
+
+    <section class="content hidden" id="complete">
+      <div class="success-mark"><span>✓</span></div>
+
+      <div class="eyebrow">
+        <span class="eyebrow-line"></span>
+        ГОТОВО
+      </div>
+
+      <h2>TwitchChat<br><span>установлен.</span></h2>
+
+      <p class="lead">
+        Всё готово. Теперь можно открыть приложение и подключить чат к OBS Studio.
+      </p>
+
+      <div class="installed-path" id="installedPath"></div>
+
+      <div class="footer">
+        <button class="secondary" id="openFolder">Открыть папку</button>
+        <button class="primary" id="launch">
+          Запустить TwitchChat <span>→</span>
+        </button>
+      </div>
+    </section>
+
+    <section class="content hidden" id="error">
+      <div class="error-mark">!</div>
+
+      <div class="eyebrow">
+        <span class="eyebrow-line"></span>
+        ОШИБКА УСТАНОВКИ
+      </div>
+
+      <h2>Возникла ошибка<br><span>при установке :(</span></h2>
+
+      <p class="lead">
+        Не удалось завершить установку TwitchChat.
+        Нажми кнопку ниже, чтобы посмотреть подробности.
+      </p>
+
+      <button class="error-details-button" id="showError">
+        Показать ошибку <span>⌄</span>
+      </button>
+
+      <div class="error-details hidden" id="errorDetails">
+        <div class="error-details-header">
+          <span>ПОДРОБНОСТИ ОШИБКИ</span>
+          <button id="copyError">Копировать</button>
+        </div>
+        <pre id="errorMessage"></pre>
+      </div>
+
+      <div class="footer">
+        <button class="secondary" id="errorClose">Закрыть</button>
+        <button class="primary" id="retry">
+          Повторить <span>↻</span>
+        </button>
+      </div>
+    </section>
+
+    <footer class="bottomline">
+      <span>TWITCHCHAT <i>•</i> DESKTOP</span>
+      <span>MADE BY WHOSED</span>
+    </footer>
+  </main>
+
+  <script src="renderer.js"></script>
+</body>
+</html>

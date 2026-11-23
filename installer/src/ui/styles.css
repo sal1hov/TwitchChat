@@ -1,0 +1,127 @@
+:root {
+  color-scheme: dark;
+  --night: #0d0b18;
+  --ink: #f4f1ff;
+  --muted: #aaa5c8;
+  --faint: #77718f;
+  --violet: #8b5cf6;
+  --fuchsia: #d946ef;
+  --line: rgba(255,255,255,.10);
+  --glass: rgba(255,255,255,.055);
+  --grad: linear-gradient(120deg,#8b5cf6 0%,#d946ef 100%);
+  --font: "Segoe UI Variable Display","Segoe UI",system-ui,-apple-system,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:transparent;color:var(--ink);font-family:var(--font)}
+body{padding:10px}
+.window{position:relative;width:100%;height:100%;overflow:hidden;border:1px solid rgba(255,255,255,.14);border-radius:22px;background:radial-gradient(ellipse at 18% 5%,rgba(139,92,246,.18),transparent 42%),radial-gradient(ellipse at 95% 90%,rgba(217,70,239,.10),transparent 38%),rgba(13,11,24,.97);box-shadow:0 24px 90px rgba(0,0,0,.52),inset 0 1px rgba(255,255,255,.08)}
+.ambient{position:absolute;pointer-events:none;filter:blur(65px);border-radius:50%;opacity:.23}.ambient-one{width:180px;height:180px;background:#7137e8;top:100px;right:-75px}.ambient-two{width:160px;height:160px;background:#c026d3;bottom:-100px;left:100px}
+.titlebar{height:58px;position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;padding:0 22px;border-bottom:1px solid rgba(255,255,255,.065);-webkit-app-region:drag}
+.brand-mini{display:flex;align-items:center;gap:9px;font-size:13px;font-weight:750;letter-spacing:.01em}.brand-dot{width:9px;height:9px;border-radius:50%;background:var(--grad);box-shadow:0 0 15px rgba(168,85,247,.9)}.setup-label{margin-left:2px;padding:4px 7px;border:1px solid rgba(167,139,250,.28);border-radius:6px;color:#c4b5fd;font-size:9px;letter-spacing:.13em;font-weight:800}
+.window-actions{display:flex;gap:7px;-webkit-app-region:no-drag}.window-actions button{width:28px;height:26px;border:1px solid transparent;border-radius:8px;background:transparent;color:#aaa5c8;font-size:18px;line-height:1;cursor:pointer}.window-actions button:hover{background:rgba(255,255,255,.09);color:white}.window-actions button:last-child:hover{background:rgba(244,63,94,.2);color:#ff9cab}
+.content{position:absolute;z-index:1;inset:58px 0 40px;padding:42px 66px 26px;display:flex;flex-direction:column;animation:appear .28s ease both}.hidden{display:none!important}@keyframes appear{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+.hero-icon{width:66px;height:66px;padding:9px;border-radius:20px;background:linear-gradient(145deg,rgba(255,255,255,.13),rgba(255,255,255,.035));border:1px solid rgba(255,255,255,.14);box-shadow:0 12px 35px rgba(0,0,0,.25),inset 0 1px rgba(255,255,255,.12);margin-bottom:27px}.hero-icon img{width:100%;height:100%;object-fit:contain;border-radius:13px}.eyebrow,.step-label{display:flex;align-items:center;gap:9px;color:#b9a4ff;font-size:10px;font-weight:800;letter-spacing:.17em}.eyebrow-line{width:19px;height:1px;background:var(--grad)}
+h1,h2{margin:15px 0 13px;font-size:42px;line-height:1.08;letter-spacing:-.055em;font-weight:760}h1 span,h2 span{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}.lead,.sublead{max-width:490px;margin:0;color:var(--muted);font-size:14px;line-height:1.7}.feature-row{display:flex;gap:34px;margin-top:30px}.feature{display:flex;align-items:center;gap:11px}.feature-icon{width:34px;height:34px;display:grid;place-items:center;border-radius:11px;background:rgba(139,92,246,.14);border:1px solid rgba(167,139,250,.2);color:#c4b5fd;font-size:16px}.feature b,.feature small{display:block}.feature b{font-size:12px;font-weight:700}.feature small{margin-top:4px;color:var(--faint);font-size:11px}
+.footer{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:auto;padding-top:25px}.version{color:var(--faint);font-size:11px}.primary,.secondary,.browse{height:43px;padding:0 19px;border-radius:12px;font:650 12px var(--font);cursor:pointer;transition:transform .16s,filter .16s,border-color .16s}.primary{border:1px solid rgba(255,255,255,.18);background:var(--grad);color:white;box-shadow:0 7px 24px rgba(139,92,246,.24),inset 0 1px rgba(255,255,255,.25)}.primary span{margin-left:13px;font-size:15px}.primary:hover{filter:brightness(1.1);transform:translateY(-1px)}.secondary,.browse{background:var(--glass);border:1px solid var(--line);color:#ddd8f2}.secondary:hover,.browse:hover{background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.2)}
+.step-label{margin:9px 0 10px;color:#a78bfa}h2{font-size:36px;margin:10px 0 12px}.sublead{font-size:13px}.field-label{margin:32px 0 9px;color:var(--faint);font-size:10px;font-weight:800;letter-spacing:.13em}.path-field{display:flex;gap:9px}.path-field input{height:45px;min-width:0;flex:1;padding:0 14px;border-radius:11px;border:1px solid rgba(255,255,255,.12);outline:none;background:rgba(0,0,0,.2);color:var(--ink);font:12px var(--font)}.path-field input:focus{border-color:rgba(167,139,250,.65);box-shadow:0 0 0 3px rgba(139,92,246,.12)}.browse{height:45px}.hint{display:flex;gap:9px;margin-top:15px;color:var(--faint);font-size:11px;line-height:1.5}.hint span{color:#a78bfa}
+.progress-wrap{margin-top:54px}.progress-meta{display:flex;justify-content:space-between;margin-bottom:11px;color:var(--muted);font-size:11px}.progress-meta b{color:#c4b5fd}.progress-track{height:7px;border-radius:99px;background:rgba(255,255,255,.09);overflow:hidden}.progress-track div{height:100%;width:0;border-radius:99px;background:var(--grad);box-shadow:0 0 16px rgba(168,85,247,.5);transition:width .3s ease}.install-log{display:flex;align-items:center;gap:9px;margin-top:19px;color:var(--faint);font-size:11px}.pulse{width:7px;height:7px;border-radius:50%;background:#a78bfa;box-shadow:0 0 10px #a78bfa;animation:pulse 1.2s infinite}@keyframes pulse{50%{opacity:.35}}
+.success-mark,.error-mark{width:58px;height:58px;display:grid;place-items:center;border-radius:18px;margin:8px 0 28px;background:rgba(62,224,160,.1);border:1px solid rgba(62,224,160,.25);color:#68edb5;font-size:28px;box-shadow:0 10px 35px rgba(62,224,160,.08)}.error-mark{background:rgba(255,107,134,.1);border-color:rgba(255,107,134,.25);color:#ff8da3}.installed-path{margin-top:22px;padding:12px 14px;border-radius:11px;background:rgba(255,255,255,.045);border:1px solid var(--line);color:var(--muted);font-size:11px;overflow-wrap:anywhere}
+.bottomline{position:absolute;z-index:2;left:22px;right:22px;bottom:0;height:40px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(255,255,255,.055);color:#625c7b;font-size:8px;font-weight:800;letter-spacing:.14em}.bottomline i{padding:0 5px;color:#a78bfa;font-style:normal}
+
+
+/* Error screen */
+
+.error-details-button {
+  align-self: flex-start;
+  margin-top: 22px;
+  padding: 10px 14px;
+  border: 1px solid rgba(255, 141, 163, .25);
+  border-radius: 10px;
+  background: rgba(255, 107, 134, .08);
+  color: #ff9cab;
+  font: 650 12px var(--font);
+  cursor: pointer;
+  transition: background .18s, border-color .18s;
+}
+
+.error-details-button:hover {
+  background: rgba(255, 107, 134, .15);
+  border-color: rgba(255, 141, 163, .45);
+}
+
+.error-details-button span {
+  margin-left: 8px;
+}
+
+.error-details {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  max-height: 190px;
+  margin-top: 13px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 141, 163, .16);
+  border-radius: 11px;
+  background: rgba(0, 0, 0, .22);
+}
+
+.error-details.hidden {
+  display: none !important;
+}
+
+.error-details-header {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, .07);
+  color: #ff9cab;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .12em;
+}
+
+.error-details-header button {
+  padding: 5px 9px;
+  border: 1px solid rgba(255, 255, 255, .1);
+  border-radius: 7px;
+  background: rgba(255, 255, 255, .05);
+  color: #ddd8f2;
+  font: 600 10px var(--font);
+  cursor: pointer;
+}
+
+.error-details-header button:hover {
+  background: rgba(255, 255, 255, .12);
+}
+
+.error-details pre {
+  min-height: 0;
+  margin: 0;
+  padding: 12px;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  user-select: text;
+  color: #d5cfe8;
+  font: 10px/1.6 Consolas, "Cascadia Code", monospace;
+}
+
+#error .footer {
+  flex-shrink: 0;
+}
+
+#error .lead {
+  max-width: 520px;
+}
+
+#error .error-mark {
+  flex-shrink: 0;
+}
+
+#error .footer button:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}

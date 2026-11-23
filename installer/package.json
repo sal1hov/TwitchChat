@@ -1,0 +1,82 @@
+
+{
+  "name": "twitchchat-setup",
+  "version": "0.1.0",
+  "private": true,
+  "description": "TwitchChat Setup",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "node build.js"
+  },
+  "devDependencies": {
+    "electron": "^33.4.11",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "local.TwitchChat.Setup",
+    "productName": "TwitchChat Setup",
+    "asar": true,
+    "directories": {
+      "output": "../dist/installer"
+    },
+    "files": [
+      "src/**/*",
+      "assets/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "build/payload",
+        "to": "payload"
+      },
+      {
+        "from": "assets/icon.png",
+        "to": "icon.png"
+      }
+    ],
+    "win": {
+      "icon": "assets/icon.ico",
+      "signAndEditExecutable": false,
+      "target": [
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "artifactName": "TwitchChat-Setup-${version}-win-x64.${ext}"
+    },
+    "mac": {
+      "icon": "assets/icon.png",
+      "identity": null,
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "artifactName": "TwitchChat-Setup-${version}-${arch}.${ext}"
+    },
+    "dmg": {
+      "title": "TwitchChat Setup",
+      "contents": [
+        {
+          "x": 130,
+          "y": 180,
+          "type": "file"
+        },
+        {
+          "x": 410,
+          "y": 180,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
+    }
+  }
+}
