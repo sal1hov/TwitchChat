@@ -333,6 +333,20 @@ function connect() {
       log.replaceChildren();
       return;
     }
+    if (data.type === 'deleteMessage') {
+      const id = String(data.id || '');
+      if (!id) return;
+      store = store.filter((entry) => String(entry.msg.id || '') !== id);
+      rebuild();
+      return;
+    }
+    if (data.type === 'deleteUserMessages') {
+      const login = String(data.login || '').toLowerCase();
+      if (!login) return;
+      store = store.filter((entry) => String(entry.msg.login || '').toLowerCase() !== login);
+      rebuild();
+      return;
+    }
     if (data.type === 'message') addMessage(data.message);
   };
 
