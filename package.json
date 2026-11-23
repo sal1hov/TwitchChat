@@ -1,7 +1,7 @@
 {
-  "name": "chat-server",
-  "productName": "ChatServer",
-  "version": "2.1.0",
+  "name": "twitchchat",
+  "productName": "TwitchChat",
+  "version": "0.1.0",
   "description": "Локальный Twitch-чат для OBS",
   "private": true,
   "main": "main.js",
@@ -9,7 +9,7 @@
     "start": "electron .",
     "server": "node server.js",
     "build:mac": "node scripts/build-mac.js",
-    "build:win": "bash windows/build.sh",
+    "build:win": "powershell -NoProfile -ExecutionPolicy Bypass -File windows/build.ps1",
     "build": "npm run build:mac && npm run build:win"
   },
   "dependencies": {
@@ -22,8 +22,8 @@
     "electron-builder": "^25.1.8"
   },
   "build": {
-    "appId": "local.chatserver.app",
-    "productName": "ChatServer",
+    "appId": "local.TwitchChat.app",
+    "productName": "TwitchChat",
     "asar": true,
     "files": [
       "main.js",
@@ -33,6 +33,8 @@
       "public/**/*",
       "assets/**/*",
       "package.json",
+      "package-lock.json",
+      "config.json",
       "settings.js",
       "settings.css"
     ],
