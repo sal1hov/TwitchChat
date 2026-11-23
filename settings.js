@@ -175,13 +175,22 @@
 
   async function save() {
     const values = read();
-    await window.api.setAppearance(values);
-    saved = values;
-    window.dispatchEvent(new CustomEvent('appearance-saved', { detail: values }));
-    $('st-save').disabled = true;
-    $('st-state').textContent = 'Сохранено ✓';
-    clearTimeout(flashTimer);
-    flashTimer = setTimeout(refreshState, 1500);
+    const saveButton = $('st-save');
+    saveButton.disabled = true;
+    $('st-state').textContent = 'Сохраняю…';
+    try {
+      const result = await window.api.setAppearance(values);
+      saved = { ...values, ...(result || {}) };
+      window.dispatchEvent(new CustomEvent('appearance-saved', { detail: saved }));
+      $('st-state').textContent = 'Сохранено ✓';
+      clearTimeout(flashTimer);
+      flashTimer = setTimeout(refreshState, 1500);
+      return true;
+    } catch (error) {
+      $('st-state').textContent = 'Не удалось сохранить: ' + (error?.message || error || 'ошибка');
+      refreshState();
+      return false;
+    }
   }
 
   overlay.addEventListener('input', update);
@@ -233,8 +242,7 @@
   $('st-back').addEventListener('click', requestLeave);
 
   $('st-c-save').addEventListener('click', async () => {
-    await save();
-    leave();
+    if (await save()) leave();
   });
 
   $('st-c-drop').addEventListener('click', () => {
@@ -261,5 +269,8 @@
     saved = read();
     refreshState();
     sendToPreview(saved);
+  }).catch((error) => {
+    $('st-state').textContent = 'Не удалось загрузить настройки: ' + (error?.message || error || 'ошибка');
+    refreshState();
   });
 })();

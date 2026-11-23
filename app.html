@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="utf-8">
-  <title>ChatServer</title>
+  <title>TwitchChat</title>
   <style>
     :root {
       --night: #0d0b18;
@@ -215,6 +215,14 @@
       background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
     }
 
+    body.avalonia-host .titlebar {
+  display: flex;
+  -webkit-app-region: drag;
+}
+
+body.avalonia-host .app {
+  padding-top: 66px;
+}
     .app {
       position: relative;
       z-index: 2;
@@ -966,7 +974,7 @@
   <div class="titlebar">
     <div class="titlebar-brand">
       <img src="assets/icon.png" alt="">
-      <span class="titlebar-caption">ChatServer</span>
+      <span class="titlebar-caption">TwitchChat</span>
     </div>
     <div class="window-controls" aria-label="Управление окном">
       <button class="window-control" id="window-minimize" type="button" aria-label="Свернуть" title="Свернуть">
@@ -988,7 +996,7 @@
       <div class="brand">
         <img class="logo" src="assets/icon.png" alt="">
         <div>
-          <div class="brand-name">ChatServer</div>
+          <div class="brand-name">TwitchChat</div>
           <div class="brand-sub">Локальный чат для OBS</div>
         </div>
       </div>
@@ -1063,11 +1071,11 @@
         <div class="credit-row">
           <span>development by <a id="author" href="https://github.com/strdns">strdns</a></span>
           <span class="ver ver-original" data-tooltip="Версия оригинального проекта"
-            aria-label="Версия оригинального проекта" tabindex="0">v<span id="version">2.1</span></span>
+            aria-label="Версия оригинального проекта" tabindex="0">v<span id="original-version">2.1</span></span>
         </div>
         <div class="credit-row">
           <span>fork by <a id="authorfork" href="https://github.com/sal1hov">whosed</a></span>
-          <span class="ver ver-fork" data-tooltip="Версия форка" aria-label="Версия форка" tabindex="0">beta 0.1</span>
+          <span class="ver ver-fork" data-tooltip="Версия форка" aria-label="Версия форка" tabindex="0" id="fork-version">beta 0.1</span>
         </div>
       </div>
       <button id="quit" class="ghost quiet" type="button">
@@ -1121,6 +1129,47 @@
   </div>
 
   <script>
+    // Native Avalonia host: expose the same window.api contract as Electron preload.js.
+    if (new URLSearchParams(location.search).get('host') === 'avalonia') {
+      document.body.classList.add('avalonia-host');
+      const pending = new Map();
+      let requestId = 0;
+      window.__twitchchatResolve = (id, value, error) => {
+        const entry = pending.get(String(id));
+        if (!entry) return;
+        pending.delete(String(id));
+        if (error) entry.reject(new Error(String(error)));
+        else entry.resolve(value);
+      };
+      const callHost = (method, args = {}) => new Promise((resolve, reject) => {
+        if (typeof window.invokeCSharpAction !== 'function') {
+          reject(new Error('Связь с Windows-приложением недоступна'));
+          return;
+        }
+        const id = String(++requestId);
+        pending.set(id, { resolve, reject });
+        try { window.invokeCSharpAction(JSON.stringify({ id, method, args })); }
+        catch (error) { pending.delete(id); reject(error); }
+      });
+      window.api = {
+         minimizeWindow: () => callHost('minimizeWindow'),
+         closeWindow: () => callHost('closeWindow'),
+         startWindowDrag: () => callHost('startWindowDrag'),
+         getChannel: () => callHost('getChannel'),
+         start: (channel) => callHost('start', { channel }),
+         stop: () => callHost('stop'),
+         quit: () => callHost('quit'),
+          copy: (text) => callHost('copy', { text }),
+         version: () => callHost('version'),
+         openAuthor: () => callHost('openAuthor'),
+          openAuthorFork: () => callHost('openAuthorFork'),
+          getAppearance: () => callHost('getAppearance'),
+          setAppearance: (params) => callHost('setAppearance', { params })
+};
+    }
+  </script>
+
+  <script>
     const channelInput = document.getElementById('channel');
     const startButton = document.getElementById('start');
     const errorBox = document.getElementById('error');
@@ -1129,14 +1178,30 @@
     const lamp = document.getElementById('lamp');
     const lampText = document.getElementById('lamp-text');
 
-    // Собственные кнопки управления frameless-окном Electron.
-    document.getElementById('window-minimize').addEventListener('click', () => {
-      window.api?.minimizeWindow();
-    });
-    document.getElementById('window-close').addEventListener('click', () => {
-      // Сохраняем существующее поведение: крестик прячет приложение в трей.
-      window.api?.closeWindow();
-    });
+    // Собственные кнопки управления frameless-окном Electron и Avalonia.
+document.getElementById('window-minimize').addEventListener('click', () => {
+  window.api?.minimizeWindow();
+});
+
+document.getElementById('window-close').addEventListener('click', () => {
+  // Крестик прячет приложение в трей.
+  window.api?.closeWindow();
+});
+
+// Перетаскивание безрамочного окна Windows.
+// В Electron перемещение по-прежнему обеспечивает -webkit-app-region.
+if (document.body.classList.contains('avalonia-host')) {
+  const titlebar = document.querySelector('.titlebar');
+
+  titlebar?.addEventListener('pointerdown', (event) => {
+    if (event.button !== 0) return;
+
+    // Не начинаем перемещение при нажатии на кнопки управления.
+    if (event.target.closest('.window-controls, button')) return;
+
+    window.api?.startWindowDrag();
+  });
+}
 
     function showLink(url) {
       if (!url) return;
@@ -1251,15 +1316,12 @@
     });
 
     if (window.api) {
-      window.api.version().then((version) => {
-        if (version) document.getElementById('version').textContent = version;
-      });
-      window.api.getChannel().then((channel) => {
-        if (!channel) return;
-        channelInput.value = channel;
-        run();
-      });
+  window.api.version().then((version) => {
+    if (version) {
+      document.getElementById('fork-version').textContent = 'beta ' + version;
     }
+  });
+}
 
     /* ---------- Предпросмотр на главной: показывает сохранённое оформление ---------- */
 

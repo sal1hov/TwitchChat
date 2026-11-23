@@ -1,8 +1,18 @@
 const http = require('http');
+const fs = require('fs');
 const path = require('path');
 const express = require('express');
 const tmi = require('tmi.js');
 const { WebSocketServer } = require('ws');
+
+const hostedMode = process.argv.includes('--desktop-host');
+if (hostedMode) {
+  // stdout is reserved exclusively for the line-based desktop bridge protocol.
+  // Redirect every normal console method to stderr so a dependency cannot corrupt RPC output.
+  for (const method of ['log', 'info', 'warn', 'debug', 'dir', 'trace']) {
+    console[method] = (...args) => console.error(...args);
+  }
+}
 
 let fileConfig = {};
 try {
@@ -10,8 +20,14 @@ try {
 } catch (err) { }
 
 let channel = '';
-const port = Number(fileConfig.port) || 3000;
-const maxMessages = Number(fileConfig.maxMessages) || 50;
+const portValue = Number(fileConfig.port);
+const port = Number.isInteger(portValue) && portValue > 0 && portValue <= 65535 ? portValue : 3000;
+const configuredMax = Number(fileConfig.maxMessages);
+const maxMessages = Number.isFinite(configuredMax) && configuredMax > 0
+  ? Math.min(500, Math.floor(configuredMax))
+  : 50;
+// Keep enough messages for the UI's configurable maximum even when config.json uses a lower default.
+const historyLimit = Math.max(200, maxMessages);
 
 const NICK_COLORS = [
   '#FF0000', '#0000FF', '#008000', '#B22222', '#FF7F50',
@@ -21,6 +37,12 @@ const NICK_COLORS = [
 
 let emoteMap = new Map();
 let badgeMap = new Map();
+const activeAssetRequests = new Set();
+
+function abortAssetRequests() {
+  for (const controller of activeAssetRequests) controller.abort();
+  activeAssetRequests.clear();
+}
 const history = [];
 let loadId = 0;
 let runId = 0;
@@ -75,12 +97,18 @@ function joinBits(parts) {
 async function getJson(url) {
   let lastError;
   for (let attempt = 0; attempt < 2; attempt++) {
+    const controller = new AbortController();
+    activeAssetRequests.add(controller);
+    const timeout = setTimeout(() => controller.abort(), 12000);
     try {
-      const res = await fetch(url, { signal: AbortSignal.timeout(90000) });
+      const res = await fetch(url, { signal: controller.signal });
       if (!res.ok) throw new Error(res.status + ' ' + url);
       return await res.json();
     } catch (err) {
       lastError = err;
+    } finally {
+      clearTimeout(timeout);
+      activeAssetRequests.delete(controller);
     }
   }
   throw lastError;
@@ -89,7 +117,7 @@ async function getJson(url) {
 function addBttv(list, map) {
   for (const emote of list || []) {
     if (!emote || !emote.code || !emote.id) continue;
-    map.set(emote.code, 'https://cdn.betterttv.net/emote/' + emote.id + '/2x');
+    map.set(emote.code, 'https://cdn.betterttv.net/emote/' + emote.id + '/2x.webp');
   }
 }
 
@@ -106,18 +134,38 @@ function add7tv(list, map) {
   }
 }
 
-function addFfz(data, map) {
-  const lists = Array.isArray(data)
-    ? [data]
-    : [data && data.channelEmotes, data && data.sharedEmotes];
-  for (const list of lists) {
-    for (const emote of list || []) {
-      const images = (emote && emote.images) || {};
-      const url = images['2x'] || images['1x'] || '';
-      if (!emote || !emote.code || !url) continue;
-      map.set(emote.code, url);
+function addFfzEmotes(emotes, map) {
+  for (const emote of emotes || []) {
+    if (!emote) continue;
+    const urls = emote.urls || emote.images || {};
+    let url = urls['2'] || urls['1'] || urls['4'] || urls['2x'] || urls['1x'] || '';
+    if (!url) continue;
+    if (url.startsWith('//')) url = 'https:' + url;
+    if (!/^https?:\/\//i.test(url)) continue;
+    const name = emote.name || emote.code;
+    if (name) map.set(name, url);
+  }
+}
+
+function addFfzGlobal(data, map, twitchId) {
+  const sets = data && data.sets && typeof data.sets === 'object' ? data.sets : {};
+  const allowed = new Set((data && Array.isArray(data.default_sets) ? data.default_sets : []).map(String));
+  if (twitchId && data && data.users && typeof data.users === 'object') {
+    for (const [setId, users] of Object.entries(data.users)) {
+      if (Array.isArray(users) && users.some((id) => String(id) === String(twitchId))) allowed.add(String(setId));
     }
   }
+  for (const setId of allowed) {
+    const set = sets[setId];
+    if (set && Array.isArray(set.emoticons)) addFfzEmotes(set.emoticons, map);
+  }
+}
+
+function addFfzRoom(data, map) {
+  const sets = data && data.sets && typeof data.sets === 'object' ? data.sets : {};
+  const setId = data && data.room && data.room.set != null ? String(data.room.set) : '';
+  const set = setId ? sets[setId] : null;
+  if (set && Array.isArray(set.emoticons)) addFfzEmotes(set.emoticons, map);
 }
 
 function addBadges(list, map) {
@@ -167,6 +215,7 @@ function publishStatus() {
 }
 
 async function loadAssets() {
+  abortAssetRequests();
   const id = ++loadId;
   if (!channel) return;
   const nextEmotes = new Map();
@@ -175,6 +224,7 @@ async function loadAssets() {
   try {
     let twitchId = '';
     const globalBadges = new Map();
+    let ffzGlobalData = null;
     const failed = [];
 
     async function attempt(label, fn) {
@@ -200,7 +250,7 @@ async function loadAssets() {
         add7tv(data.emotes, nextEmotes);
       }),
       attempt('ffz global', async () => {
-        addFfz(await getJson('https://api.betterttv.net/3/cached/frankerfacez/emotes/global'), nextEmotes);
+        ffzGlobalData = await getJson('https://api.frankerfacez.com/v1/set/global');
       }),
       attempt('badges global', async () => {
         addBadges(await getJson('https://api.ivr.fi/v2/twitch/badges/global'), globalBadges);
@@ -208,6 +258,7 @@ async function loadAssets() {
     ]);
 
     for (const [key, value] of globalBadges) nextBadges.set(key, value);
+    if (ffzGlobalData) addFfzGlobal(ffzGlobalData, nextEmotes, twitchId);
 
     if (twitchId) {
       const channelBadges = new Map();
@@ -222,7 +273,7 @@ async function loadAssets() {
           add7tv(data.emote_set && data.emote_set.emotes, nextEmotes);
         }),
         attempt('ffz channel', async () => {
-          addFfz(await getJson('https://api.betterttv.net/3/cached/frankerfacez/users/twitch/' + twitchId), nextEmotes);
+          addFfzRoom(await getJson('https://api.frankerfacez.com/v1/room/id/' + encodeURIComponent(twitchId)), nextEmotes);
         }),
         attempt('badges channel', async () => {
           addBadges(await getJson('https://api.ivr.fi/v2/twitch/badges/channel?id=' + twitchId), channelBadges);
@@ -304,6 +355,8 @@ function person(tags, fallbackName) {
     ? safeTags.color
     : defaultColor(login || displayName);
   return {
+    id: safeTags.id ? String(safeTags.id) : undefined,
+    login: String(login).toLowerCase(),
     displayName,
     color,
     badges: badgesOf(safeTags)
@@ -345,21 +398,47 @@ function clock() {
 function sendRaw(payload) {
   const data = JSON.stringify(payload);
   for (const socket of wss.clients) {
-    if (socket.readyState === 1) socket.send(data);
+    if (socket.readyState === 1) {
+      try { socket.send(data, (error) => { if (error) console.error('WebSocket send:', error.message); }); }
+      catch (error) { console.error('WebSocket send:', error.message); }
+    }
   }
 }
 
 function emit(message) {
   if (!message.time) message.time = clock();
   history.push(message);
-  while (history.length > maxMessages) history.shift();
+  while (history.length > historyLimit) history.shift();
   sendRaw({ type: 'message', message });
 }
 
-function clearChat() {
+function clearMessages() {
   history.length = 0;
-  currentStatus = { level: 'wait', text: 'подключаюсь к чату' };
   sendRaw({ type: 'clear' });
+}
+
+function clearChat() {
+  currentStatus = { level: 'wait', text: 'подключаюсь к чату' };
+  clearMessages();
+}
+
+function deleteMessage(id) {
+  const messageId = String(id || '');
+  if (!messageId) return;
+  const before = history.length;
+  for (let index = history.length - 1; index >= 0; index--) {
+    if (String(history[index].id || '') === messageId) history.splice(index, 1);
+  }
+  if (history.length !== before) sendRaw({ type: 'deleteMessage', id: messageId });
+}
+
+function deleteUserMessages(login) {
+  const user = String(login || '').trim().replace(/^@/, '').toLowerCase();
+  if (!user) return;
+  const remaining = history.filter((message) => !message.login || message.login !== user);
+  if (remaining.length === history.length) return;
+  history.splice(0, history.length, ...remaining);
+  sendRaw({ type: 'deleteUserMessages', login: user });
 }
 
 function emitUser(tags, fallbackName, parts, extra) {
@@ -382,7 +461,6 @@ app.use(express.static(path.join(__dirname, 'public'), {
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server });
 
-const APPEARANCE_KEYS = ['bg', 'op', 'color', 'font', 'size', 'outline', 'time', 'max'];
 let appearance = {};
 
 function setAppearance(next) {
@@ -406,12 +484,40 @@ wss.on('connection', (socket) => {
 });
 
 function bindIrc(client) {
+  let resolveJoin;
+  let rejectJoin;
+  let joinSettled = false;
+  const joined = new Promise((resolve, reject) => { resolveJoin = resolve; rejectJoin = reject; });
+  // The promise is awaited by switchChannel; mark a handler now to avoid an early unhandled rejection.
+  joined.catch(() => {});
+
   client.on('connected', () => {
     if (client !== irc) return;
+    ircUp = false;
+    ircProblem = '';
+    console.log('IRC-соединение открыто, ожидаю вход в #' + channel);
+    publishStatus();
+  });
+
+  client.on('roomstate', (joinedChannel) => {
+    if (client !== irc) return;
+    const joined = String(joinedChannel || '').replace(/^#/, '').toLowerCase();
+    if (joined !== channel) return;
     ircUp = true;
     ircProblem = '';
-    console.log('irc подключен, канал #' + channel);
+    console.log('IRC вошёл в #' + channel);
     publishStatus();
+    if (!joinSettled) { joinSettled = true; resolveJoin(); }
+  });
+
+  client.on('notice', (noticeChannel, msgid, message) => {
+    if (client !== irc) return;
+    const code = String(msgid || '').toLowerCase();
+    if (!['no_such_channel', 'msg_channel_suspended', 'msg_room_not_found'].includes(code)) return;
+    ircUp = false;
+    ircProblem = String(message || 'Twitch не разрешил войти в канал');
+    publishStatus();
+    if (!joinSettled) { joinSettled = true; rejectJoin(new Error(ircProblem)); }
   });
 
   client.on('disconnected', (reason) => {
@@ -436,6 +542,47 @@ function bindIrc(client) {
       flags: flagsOf(tags),
       reply: replyOf(tags)
     });
+  });
+
+  // tmi.js emits Bits messages via "cheer", not "message".
+  client.on('cheer', (chan, tags, message) => {
+    if (client !== irc) return;
+    const bits = tagNumber(tags && tags.bits);
+    const flags = flagsOf(tags);
+    if (bits > 0) flags.push(bits + ' битс');
+    emitUser(tags, tags && tags.username, parseParts(message || '', tags && tags.emotes), {
+      action: tags && tags['message-type'] === 'action',
+      flags,
+      reply: replyOf(tags),
+      cheer: bits
+    });
+  });
+
+  client.on('newchatter', (chan, username, tags, message) => {
+    if (client !== irc) return;
+    emitUser(tags, username, parseParts(message || '', tags && tags.emotes), {
+      flags: ['новый зритель'].concat(flagsOf(tags)),
+      reply: replyOf(tags)
+    });
+  });
+
+  client.on('ritual', (ritualName, chan, username, tags, message) => {
+    if (client !== irc) return;
+    emitUser(tags, username, withMessage('событие: ' + String(ritualName || 'ритуал'), message || '', tags && tags.emotes));
+  });
+
+  // Keep the overlay consistent with moderation actions in Twitch chat.
+  client.on('clearchat', () => {
+    if (client === irc) clearMessages();
+  });
+  client.on('messagedeleted', (chan, username, deletedMessage, tags) => {
+    if (client === irc) deleteMessage(tags && (tags['target-msg-id'] || tags.id));
+  });
+  client.on('ban', (chan, username) => {
+    if (client === irc) deleteUserMessages(username);
+  });
+  client.on('timeout', (chan, username) => {
+    if (client === irc) deleteUserMessages(username);
   });
 
   client.on('subscription', (chan, username, methods, message, tags) => {
@@ -505,12 +652,64 @@ function bindIrc(client) {
     }));
   });
 
+  client.on('redeem', (chan, username, rewardType, tags, message) => {
+    if (client !== irc) return;
+    const label = rewardType === 'highlighted-message'
+      ? 'сообщение за баллы'
+      : rewardType === 'skip-subs-mode-message'
+        ? 'сообщение в режиме «только подписчики»'
+        : 'награда за баллы';
+    emitUser(tags, username, withMessage(label, message || '', tags && tags.emotes), {
+      flags: ['награда'].concat(flagsOf(tags))
+    });
+  });
+
+  client.on('hosted', (chan, username, viewers, autohost) => {
+    if (client !== irc) return;
+    const parts = [
+      { type: 'text', text: 'хостит канал · ' + viewersLabel(viewers || 0) + (autohost ? ' · автохост' : '') }
+    ];
+    emitUser({ username, 'display-name': username, 'badges-raw': '' }, username, parts, { flags: ['хост'] });
+  });
+
+  client.on('hosting', (chan, target, viewers) => {
+    if (client !== irc) return;
+    emit({
+      displayName: String(chan || channel).replace(/^#/, ''),
+      login: String(chan || channel).replace(/^#/, '').toLowerCase(),
+      color: defaultColor(chan || channel),
+      badges: [], flags: ['хост'], reply: null, action: false,
+      parts: [{ type: 'text', text: 'перенаправляет зрителей на ' + String(target || '').replace(/^#/, '') + ' · ' + viewersLabel(viewers || 0) }]
+    });
+  });
+
+  client.on('unhost', (chan, viewers) => {
+    if (client !== irc) return;
+    emit({
+      displayName: String(chan || channel).replace(/^#/, ''),
+      login: String(chan || channel).replace(/^#/, '').toLowerCase(),
+      color: defaultColor(chan || channel),
+      badges: [], flags: ['хост'], reply: null, action: false,
+      parts: [{ type: 'text', text: 'завершил хостинг · ' + viewersLabel(viewers || 0) }]
+    });
+  });
+
   client.on('usernotice', (msgid, chan, tags, message) => {
     if (msgid !== 'announcement') return;
     emitUser(tags, '', parseParts(message || '', tags.emotes), {
       flags: ['объявление'].concat(flagsOf(tags))
     });
   });
+
+  return joined;
+}
+
+function withTimeout(promise, milliseconds, message) {
+  let timer;
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => { timer = setTimeout(() => reject(new Error(message)), milliseconds); })
+  ]).finally(() => clearTimeout(timer));
 }
 
 let irc = null;
@@ -550,9 +749,9 @@ function ensureListening() {
       reject(err);
     };
     server.once('error', onError);
-    server.listen(port, () => {
+    server.listen(port, '127.0.0.1', () => {
       server.off('error', onError);
-      console.log('виджет http://localhost:' + port);
+      console.log('виджет http://127.0.0.1:' + port);
       resolve();
     });
   });
@@ -575,7 +774,7 @@ async function switchChannel(next, id) {
     const old = irc;
     irc = null;
     old.removeAllListeners();
-    old.disconnect().catch(() => { });
+    try { await old.disconnect(); } catch (err) { console.error('Отключение предыдущего канала:', err.message); }
   }
   if (id !== runId) return { superseded: true };
 
@@ -585,7 +784,11 @@ async function switchChannel(next, id) {
   assetProblems = [];
   clearChat();
   ensureRefresh();
-  await loadAssets();
+  // Third-party emote/badge APIs may be slow or temporarily unavailable.
+  // Do not keep the user waiting for them before connecting to Twitch.
+  emoteMap = new Map();
+  badgeMap = new Map();
+  loadAssets().catch((err) => console.error('Загрузка ресурсов:', err));
   if (id !== runId) return { superseded: true };
 
   const client = new tmi.Client({
@@ -595,22 +798,26 @@ async function switchChannel(next, id) {
   });
   if (id !== runId) return { superseded: true };
   irc = client;
-  bindIrc(client);
+  const joined = bindIrc(client);
 
   try {
-    await client.connect();
+    await withTimeout(client.connect(), 25000, 'Не удалось установить соединение с Twitch за 25 секунд');
+    await withTimeout(joined, 20000, 'Twitch не подтвердил вход в канал за 20 секунд');
   } catch (err) {
     if (id !== runId) return { superseded: true };
-    ircProblem = 'чат не подключился: ' + err.message;
+    ircProblem = 'чат не подключился: ' + (err.message || 'неизвестная ошибка');
     console.error(ircProblem);
+    if (irc === client) irc = null;
+    client.removeAllListeners();
+    try { await client.disconnect(); } catch { }
     publishStatus();
     const error = new Error(ircProblem);
-    error.url = 'http://localhost:' + port;
+    error.url = server.listening ? 'http://127.0.0.1:' + port : '';
     throw error;
   }
 
   if (id !== runId) return { superseded: true };
-  return { url: 'http://localhost:' + port, channel };
+  return { url: 'http://127.0.0.1:' + port, channel };
 }
 
 function startChannel(name) {
@@ -621,21 +828,133 @@ function startChannel(name) {
 
 async function stopChannel() {
   runId += 1;
+  loadId += 1;
+  abortAssetRequests();
   const old = irc;
   irc = null;
   ircUp = false;
   ircProblem = '';
-  if (!old) return;
-  old.removeAllListeners();
-  try { await old.disconnect(); } catch (err) { }
+  if (old) {
+    old.removeAllListeners();
+    try { await old.disconnect(); } catch (err) { console.error('Отключение IRC:', err.message); }
+  }
+  clearChat();
 }
 
-if (require.main === module) {
-  const boot = fileConfig.channel ? startChannel(fileConfig.channel) : ensureListening();
-  boot.catch((err) => {
-    console.error(err.message || err);
-    process.exit(1);
+async function shutdownServer() {
+  if (refreshTimer) {
+    clearInterval(refreshTimer);
+    refreshTimer = null;
+  }
+  for (const socket of wss.clients) {
+    try { socket.terminate(); } catch { }
+  }
+  if (server.listening) {
+    await new Promise((resolve) => server.close(() => resolve()));
+  }
+}
+
+function hostSettingsPath() {
+  return process.env.TWITCHCHAT_SETTINGS_PATH || path.join(__dirname, 'settings.json');
+}
+
+function readHostSettings() {
+  try {
+    const value = JSON.parse(fs.readFileSync(hostSettingsPath(), 'utf8'));
+    return value && typeof value === 'object' ? value : {};
+  } catch {
+    return {};
+  }
+}
+
+function writeHostSettings(patch) {
+  const file = hostSettingsPath();
+  const current = readHostSettings();
+  const next = { ...current, ...patch };
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  const temp = file + '.tmp';
+  fs.writeFileSync(temp, JSON.stringify(next, null, 2), 'utf8');
+  fs.renameSync(temp, file);
+  return next;
+}
+
+async function handleHostCommand(message) {
+  const args = message.args || {};
+  switch (message.method) {
+    case 'getAppearance':
+      return appearance;
+    case 'setAppearance': {
+      const clean = setAppearance(args.params || {});
+      writeHostSettings({ appearance: clean });
+      return clean;
+    }
+    case 'start': {
+      try {
+        const result = await startChannel(args.channel || '');
+        if (result.superseded) return { ok: true, superseded: true };
+        writeHostSettings({ channel: result.channel });
+        return { ok: true, url: result.url, channel: result.channel };
+      } catch (error) {
+        return {
+          ok: false,
+          url: error.url || '',
+          error: error.code === 'EADDRINUSE' ? 'Порт ' + port + ' уже занят' : (error.message || 'Не удалось подключиться')
+        };
+      }
+    }
+    case 'stop':
+      await stopChannel();
+      return { ok: true };
+    case 'shutdown':
+      await stopChannel();
+      await shutdownServer();
+      return { ok: true };
+    default:
+      throw new Error('Неизвестная команда: ' + String(message.method || ''));
+  }
+}
+
+function runDesktopHost() {
+  const stored = readHostSettings();
+  setAppearance(stored.appearance || {});
+  process.stdout.write(JSON.stringify({ type: 'ready' }) + '\n');
+  let buffer = '';
+  let queue = Promise.resolve();
+  process.stdin.setEncoding('utf8');
+  process.stdin.on('data', (chunk) => {
+    buffer += chunk;
+    let newline;
+    while ((newline = buffer.indexOf('\n')) >= 0) {
+      const line = buffer.slice(0, newline).trim();
+      buffer = buffer.slice(newline + 1);
+      if (!line) continue;
+      queue = queue.then(async () => {
+        let request;
+        try {
+          request = JSON.parse(line);
+          const result = await handleHostCommand(request);
+          process.stdout.write(JSON.stringify({ id: request.id, result }) + '\n');
+        } catch (error) {
+          process.stdout.write(JSON.stringify({ id: request && request.id, error: error.message || String(error) }) + '\n');
+        }
+      }).catch((error) => console.error('Desktop host queue:', error));
+    }
+  });
+  process.stdin.on('end', () => {
+    queue.then(() => process.exit(0), () => process.exit(1));
   });
 }
 
-module.exports = { startChannel, stopChannel, port, normalizeChannel, setAppearance };
+if (require.main === module) {
+  if (hostedMode) {
+    runDesktopHost();
+  } else {
+    const boot = fileConfig.channel ? startChannel(fileConfig.channel) : ensureListening();
+    boot.catch((err) => {
+      console.error(err.message || err);
+      process.exit(1);
+    });
+  }
+}
+
+module.exports = { startChannel, stopChannel, shutdownServer, port, normalizeChannel, setAppearance };
