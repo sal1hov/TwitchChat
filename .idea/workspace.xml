@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="7b0c750a-f2ce-421d-bd3a-3c8b4a77e7a1" name="Changes" comment="Beta 0.1.1: Добавлен собственный установщик приложения" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ChangesViewManager">
+    <option name="groupingKeys">
+      <option value="directory" />
+      <option value="repository" />
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;sal1hov&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/sal1hov/TwitchChat.git&quot;,
+    &quot;accountId&quot;: &quot;4dc10873-8006-46d0-9ff2-06728b50207e&quot;
+  }
+}</component>
+  <component name="PackageJsonUpdateNotifier">
+    <dismissed value="$PROJECT_DIR$/package.json" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 3
+}</component>
+  <component name="ProjectId" id="3MNA5QaIpyOGB59cw402BbUlYbN" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "master",
+    "last_opened_file_path": "C:/Users/Камил/PycharmProjects/TwitchChat/windows",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\Камил\PycharmProjects\TwitchChat\windows" />
+      <recent name="C:\Users\Камил\PycharmProjects\TwitchChat" />
+    </key>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-js-predefined-d6986cc7102b-b598e85cdad2-JavaScript-PY-252.25557.178" />
+        <option value="bundled-python-sdk-ce6832f46686-7b97d883f26b-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-252.25557.178" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="7b0c750a-f2ce-421d-bd3a-3c8b4a77e7a1" name="Changes" comment="" />
+      <created>1795180469999</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1795180469999</updated>
+      <workItem from="1795180546844" duration="2918000" />
+      <workItem from="1795392799107" duration="14342000" />
+      <workItem from="1795442677568" duration="6679000" />
+    </task>
+    <task id="LOCAL-00001" summary="pre-realise 0.1">
+      <option name="closed" value="true" />
+      <created>1795182940385</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1795182940385</updated>
+    </task>
+    <task id="LOCAL-00002" summary="pre-realise 0.1">
+      <option name="closed" value="true" />
+      <created>1795183019784</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1795183019784</updated>
+    </task>
+    <task id="LOCAL-00003" summary="pre-release 0.1: Тестовое обновление README.md файла.">
+      <option name="closed" value="true" />
+      <created>1795393319639</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1795393319639</updated>
+    </task>
+    <task id="LOCAL-00004" summary="pre-beta 0.1: Добавлено/Докручено приложение для Windows.">
+      <option name="closed" value="true" />
+      <created>1795410591265</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1795410591265</updated>
+    </task>
+    <task id="LOCAL-00005" summary="pre-beta 0.1: Обновлён функционал чата.">
+      <option name="closed" value="true" />
+      <created>1795410640883</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1795410640883</updated>
+    </task>
+    <task id="LOCAL-00006" summary="pre-beta 0.1: Обновлён функционал чата.">
+      <option name="closed" value="true" />
+      <created>1795410651686</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1795410651686</updated>
+    </task>
+    <task id="LOCAL-00007" summary="pre-beta 0.1: Обновлена документация. В последующем будет обновлена до конца.">
+      <option name="closed" value="true" />
+      <created>1795410684995</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1795410684995</updated>
+    </task>
+    <task id="LOCAL-00008" summary="pre-beta 0.1: Обновлены зависимости проекта">
+      <option name="closed" value="true" />
+      <created>1795410702469</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1795410702469</updated>
+    </task>
+    <task id="LOCAL-00009" summary="pre-beta 0.1: build: настроена сборка для Windows и macOS">
+      <option name="closed" value="true" />
+      <created>1795410753213</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1795410753213</updated>
+    </task>
+    <task id="LOCAL-00010" summary="pre-beta 0.1: Обновлена документация. В последующем будет обновлена до конца.">
+      <option name="closed" value="true" />
+      <created>1795412103790</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1795412103790</updated>
+    </task>
+    <task id="LOCAL-00011" summary="Beta 0.1.1: Добавлен собственный установщик приложения">
+      <option name="closed" value="true" />
+      <created>1795449922055</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1795449922055</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="pre-realise 0.1" />
+    <MESSAGE value="pre-release 0.1: Тестовое обновление README.md файла." />
+    <MESSAGE value="pre-beta 0.1: Добавлено/Докручено приложение для Windows." />
+    <MESSAGE value="pre-beta 0.1: Обновлён функционал чата." />
+    <MESSAGE value="pre-beta 0.1: Обновлены зависимости проекта" />
+    <MESSAGE value="pre-beta 0.1: build: настроена сборка для Windows и macOS" />
+    <MESSAGE value="pre-beta 0.1: Обновлена документация. В последующем будет обновлена до конца." />
+    <MESSAGE value="Beta 0.1.1: Добавлен собственный установщик приложения" />
+    <option name="LAST_COMMIT_MESSAGE" value="Beta 0.1.1: Добавлен собственный установщик приложения" />
+  </component>
+</project>

@@ -1,0 +1,17 @@
+
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="TwitchChat.MainWindow"
+        Width="940"
+        Height="700"
+        MinWidth="860"
+        MinHeight="620"
+        Title="TwitchChat"
+        Background="#0d0b18"
+        WindowStartupLocation="CenterScreen"
+        SystemDecorations="None"
+        CanResize="False">
+
+    <NativeWebView x:Name="Browser" />
+
+</Window>
