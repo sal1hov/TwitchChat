@@ -1,3 +1,4 @@
+
 :root {
   color-scheme: dark;
   --bg: #0b0a10;
@@ -275,66 +276,16 @@ h2 span {
   opacity: .23;
 }
 
-.image-placeholder {
+.hero-screenshot,
+.settings-screenshot {
+  display: block;
   position: relative;
   z-index: 1;
-  min-height: 330px;
-  padding: 30px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
-  text-align: center;
-  overflow: hidden;
-  border: 1px dashed rgba(190, 164, 255, .38);
-  border-radius: 18px;
-  background: linear-gradient(145deg, rgba(30, 24, 44, .96), rgba(15, 13, 22, .96));
-  box-shadow: 0 32px 90px #0008, inset 0 1px rgba(255, 255, 255, .07);
-}
-
-.image-placeholder::before,
-.image-placeholder::after {
-  content: "";
-  position: absolute;
-  width: 190px;
-  height: 190px;
-  border: 1px solid rgba(183, 151, 255, .10);
-  border-radius: 50%;
-  pointer-events: none;
-}
-
-.image-placeholder::before {
-  transform: scale(1.45);
-}
-
-.image-placeholder::after {
-  transform: scale(2);
-}
-
-.placeholder-symbol {
-  width: 48px;
-  height: 48px;
-  display: grid;
-  place-items: center;
-  border-radius: 14px;
-  color: #c9b4ff;
-  background: #a78bfa18;
-  font-size: 23px;
-}
-
-.image-placeholder strong {
-  font-size: 14px;
-}
-
-.image-placeholder code {
-  color: #bba3fa;
-  font-size: 10px;
-}
-
-.image-placeholder small {
-  color: var(--subtle);
-  font-size: 10px;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  border-radius: 16px;
+  box-shadow: 0 20px 70px rgba(0, 0, 0, .4);
 }
 
 .floating-note,
@@ -420,7 +371,7 @@ h2 span {
 }
 
 .section-heading p,
-.preview-copy>p {
+.preview-copy > p {
   max-width: 470px;
   color: var(--muted);
   font-size: 13px;
@@ -433,24 +384,75 @@ h2 span {
   gap: 13px;
 }
 
+/* Карточки возможностей */
+
 .feature-card {
+  --mouse-x: 50%;
+  --mouse-y: 50%;
+
   min-height: 220px;
   padding: 26px;
   position: relative;
+  isolation: isolate;
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 14px;
   background: linear-gradient(145deg, rgba(255, 255, 255, .045), rgba(255, 255, 255, .015));
-  transition: border-color .2s ease, transform .2s ease;
+  transition:
+    border-color .3s ease,
+    transform .3s ease;
+}
+
+/* Световое пятно, следующее за курсором */
+
+.feature-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(
+    350px circle at var(--mouse-x) var(--mouse-y),
+    rgba(167, 139, 250, .22),
+    rgba(217, 70, 239, .08) 40%,
+    transparent 75%
+  );
+  transition: opacity .35s ease;
+}
+
+/* Дополнительный светящийся контур */
+
+.feature-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  border-radius: inherit;
+  opacity: 0;
+  background: radial-gradient(
+    220px circle at var(--mouse-x) var(--mouse-y),
+    rgba(183, 156, 255, .18),
+    transparent 75%
+  );
+  transition: opacity .35s ease;
 }
 
 .feature-card:hover {
-  transform: translateY(-3px);
-  border-color: rgba(176, 139, 255, .32);
+  transform: translateY(-4px);
+  border-color: rgba(183, 156, 255, .4);
+}
+
+.feature-card:hover::before,
+.feature-card:hover::after {
+  opacity: 1;
 }
 
 .feature-card-large {
-  background: radial-gradient(ellipse at 90% 100%, #8958ed20, transparent 55%), linear-gradient(145deg, #1b1726, #121019);
+  background:
+    radial-gradient(ellipse at 90% 100%, #8958ed20, transparent 55%),
+    linear-gradient(145deg, #1b1726, #121019);
 }
 
 .feature-icon {
@@ -596,12 +598,6 @@ h2 span {
   opacity: .12;
 }
 
-.settings-placeholder {
-  min-height: 330px;
-  border-radius: 11px;
-  box-shadow: none;
-}
-
 .download-section {
   padding-bottom: 100px;
 }
@@ -613,7 +609,9 @@ h2 span {
   overflow: hidden;
   border: 1px solid #b79aff40;
   border-radius: 19px;
-  background: radial-gradient(ellipse at 85% 10%, #d946ef35, transparent 38%), linear-gradient(110deg, #211738, #171122 65%, #211329);
+  background:
+    radial-gradient(ellipse at 85% 10%, #d946ef35, transparent 38%),
+    linear-gradient(110deg, #211738, #171122 65%, #211329);
 }
 
 .download-orb {
@@ -693,6 +691,8 @@ h2 span {
   font-size: 9px;
 }
 
+/* Планшеты */
+
 @media (max-width: 900px) {
   .hero {
     grid-template-columns: 1fr;
@@ -724,8 +724,9 @@ h2 span {
   }
 }
 
-@media (max-width: 640px) {
+/* Мобильные устройства */
 
+@media (max-width: 640px) {
   .section-wrap,
   .site-header {
     width: calc(100% - 38px);
@@ -819,9 +820,8 @@ h2 span {
     line-height: 1.5;
   }
 
-  .image-placeholder {
-    min-height: 245px;
-    padding: 20px;
+  .hero-screenshot {
+    border-radius: 12px;
   }
 
   .floating-note {
@@ -864,8 +864,8 @@ h2 span {
     padding-bottom: 80px;
   }
 
-  .settings-placeholder {
-    min-height: 245px;
+  .settings-screenshot {
+    border-radius: 10px;
   }
 
   .download-section {
@@ -887,7 +887,7 @@ h2 span {
     grid-template-columns: 1fr 1fr;
   }
 
-  .site-footer>span {
+  .site-footer > span {
     text-align: right;
   }
 
@@ -901,8 +901,9 @@ h2 span {
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
+/* Уважение системной настройки уменьшения анимации */
 
+@media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
@@ -911,25 +912,4 @@ h2 span {
     animation-duration: .01ms !important;
     animation-iteration-count: 1 !important;
   }
-}
-
-
-.hero-screenshot,
-.settings-screenshot {
-  display: block;
-  width: 100%;
-  height: auto;
-  object-fit: contain;
-  border-radius: 16px;
-  box-shadow: 0 20px 70px rgba(0, 0, 0, 0.4);
-}
-
-.hero-screenshot {
-  position: relative;
-  z-index: 1;
-}
-
-.settings-screenshot {
-  position: relative;
-  z-index: 1;
 }

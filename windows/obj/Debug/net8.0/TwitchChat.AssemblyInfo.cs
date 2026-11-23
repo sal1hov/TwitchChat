@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("TwitchChat")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("0.1.1.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("0.1.1+73574f06156e12e4eabbda73a66205e0f84b6668")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("0.1.1+2a8c76cb58578f9f5bdffa3dc0912fd4a23c234d")]
 [assembly: System.Reflection.AssemblyProductAttribute("TwitchChat")]
 [assembly: System.Reflection.AssemblyTitleAttribute("TwitchChat")]
 [assembly: System.Reflection.AssemblyVersionAttribute("0.1.1.0")]

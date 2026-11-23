@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Камил\\PycharmProjects\\TwitchChat\\windows\\TwitchChat.csproj": {}
+    "C:\\Users\\камил\\PycharmProjects\\TwitchChat\\windows\\TwitchChat.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Камил\\PycharmProjects\\TwitchChat\\windows\\TwitchChat.csproj": {
-      "version": "0.1.0",
+    "C:\\Users\\камил\\PycharmProjects\\TwitchChat\\windows\\TwitchChat.csproj": {
+      "version": "0.1.1",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Камил\\PycharmProjects\\TwitchChat\\windows\\TwitchChat.csproj",
+        "projectUniqueName": "C:\\Users\\камил\\PycharmProjects\\TwitchChat\\windows\\TwitchChat.csproj",
         "projectName": "TwitchChat",
-        "projectPath": "C:\\Users\\Камил\\PycharmProjects\\TwitchChat\\windows\\TwitchChat.csproj",
+        "projectPath": "C:\\Users\\камил\\PycharmProjects\\TwitchChat\\windows\\TwitchChat.csproj",
         "packagesPath": "C:\\Users\\Камил\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Камил\\PycharmProjects\\TwitchChat\\windows\\obj\\",
+        "outputPath": "C:\\Users\\камил\\PycharmProjects\\TwitchChat\\windows\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\Камил\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -75,31 +75,12 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
-          "downloadDependencies": [
-            {
-              "name": "Microsoft.AspNetCore.App.Runtime.win-x64",
-              "version": "[8.0.34, 8.0.34]"
-            },
-            {
-              "name": "Microsoft.NETCore.App.Runtime.win-x64",
-              "version": "[8.0.34, 8.0.34]"
-            },
-            {
-              "name": "Microsoft.WindowsDesktop.App.Runtime.win-x64",
-              "version": "[8.0.34, 8.0.34]"
-            }
-          ],
           "frameworkReferences": {
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
             }
           },
           "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.428/PortableRuntimeIdentifierGraph.json"
-        }
-      },
-      "runtimes": {
-        "win-x64": {
-          "#import": []
         }
       }
     }
