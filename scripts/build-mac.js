@@ -7,7 +7,7 @@ const bin = path.join(root, 'node_modules', '.bin', 'electron-builder');
 
 execFileSync(bin, [
   '--mac',
-  `--config.artifactName=ChatServer-${version}-\${arch}.\${ext}`
+  `--config.artifactName=TwitchChat-${version}-\${arch}.\${ext}`
 ], {
   cwd: root,
   stdio: 'inherit',
