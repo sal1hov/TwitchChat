@@ -65,12 +65,6 @@ npm install
 npm start
 ```
 
-Запуск локального сервера отдельно:
-
-```bash
-npm run server
-```
-
 Сборка для macOS:
 
 ```bash
