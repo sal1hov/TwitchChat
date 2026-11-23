@@ -2,7 +2,7 @@ using System.Net.Security;
 using System.Net.Sockets;
 using System.Text;
 
-namespace ChatServer;
+namespace TwitchChat;
 
 sealed class TwitchIrc : IAsyncDisposable
 {

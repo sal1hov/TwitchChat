@@ -1,138 +1,17 @@
+
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        x:Class="ChatServer.MainWindow"
-        Width="420" Height="560"
-        MinWidth="380" MinHeight="500"
-        CanResize="False"
+        x:Class="TwitchChat.MainWindow"
+        Width="940"
+        Height="700"
+        MinWidth="860"
+        MinHeight="620"
+        Title="TwitchChat"
+        Background="#0d0b18"
+        WindowStartupLocation="CenterScreen"
         SystemDecorations="None"
-        Title="ChatServer"
-        Background="#0e0e10"
-        WindowStartupLocation="CenterScreen">
-  <Grid RowDefinitions="44,*">
-    <Border x:Name="TitleBar" Grid.Row="0"
-            Background="#151225"
-            BorderBrush="#29243b"
-            BorderThickness="0,0,0,1"
-            PointerPressed="TitleBarPointerPressed">
-      <Grid ColumnDefinitions="*,Auto" Margin="14,0,8,0">
-        <StackPanel Orientation="Horizontal" Spacing="9" VerticalAlignment="Center">
-          <Image Width="20" Height="20" Source="avares://ChatServer/Assets/icon.png"/>
-          <TextBlock Text="ChatServer" Foreground="#f4f1ff"
-                     FontSize="12.5" FontWeight="SemiBold"
-                     VerticalAlignment="Center"/>
-        </StackPanel>
-        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
-          <Button Classes="window-control" Content="—" Click="MinimizeClick" ToolTip.Tip="Свернуть"/>
-          <Button Classes="window-control window-close" Content="×"
-                  Click="CloseClick" ToolTip.Tip="Закрыть"/>
-        </StackPanel>
-      </Grid>
-    </Border>
-    <Grid Grid.Row="1" Margin="28,22,28,28" RowDefinitions="Auto,Auto,*,Auto">
-    <StackPanel Grid.Row="0" HorizontalAlignment="Center" Spacing="0">
-      <Image Width="84" Height="84" Source="avares://ChatServer/Assets/icon.png"/>
-      <TextBlock Margin="0,14,0,4"
-                 HorizontalAlignment="Center"
-                 Foreground="#adadb8"
-                 FontSize="16"
-                 Text="Локальный чат для OBS"/>
-      <Button Classes="link" Content="Как это работает" Click="HelpOpen" Margin="0,0,0,18"/>
-    </StackPanel>
-    <StackPanel Grid.Row="1" Spacing="10">
-      <TextBox x:Name="ChannelBox" Watermark="Канал или ссылка"/>
-      <Button x:Name="StartButton" Classes="primary" Content="Старт" IsEnabled="False" Click="StartClick"/>
-      <Button Classes="danger" Content="Выход" Click="QuitClick"/>
-      <TextBlock x:Name="ErrorText" Foreground="#eb0400" FontSize="13" MinHeight="18" TextWrapping="Wrap"/>
-      <Panel x:Name="LinkBox" IsVisible="False">
-        <TextBox x:Name="LinkInput" IsReadOnly="True" Padding="14,0,46,0"/>
-        <Button Classes="icon"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Center"
-                Margin="0,0,4,0"
-                Click="CopyClick"
-                ToolTip.Tip="Скопировать">
-          <Path Width="18" Height="18" Stretch="Uniform" Fill="#adadb8"
-                Data="M16,1 H4 C2.9,1 2,1.9 2,3 V17 H4 V3 H16 Z M19,5 H8 C6.9,5 6,5.9 6,7 V21 C6,22.1 6.9,23 8,23 H19 C20.1,23 21,22.1 21,21 V7 C21,5.9 20.1,5 19,5 Z M19,21 H8 V7 H19 Z"/>
-        </Button>
-      </Panel>
-    </StackPanel>
-    <StackPanel Grid.Row="3" HorizontalAlignment="Center" Spacing="2">
-      <TextBlock x:Name="VersionText" HorizontalAlignment="Center" Foreground="#53535f" FontSize="12" Text="2.1"/>
-      <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="4">
-        <TextBlock Text="development by" Foreground="#53535f" FontSize="12" VerticalAlignment="Center"/>
-        <Button Classes="link" Content="strdns" Click="OpenAuthor" FontSize="12" MinHeight="0" Padding="0" VerticalAlignment="Center"/>
-      </StackPanel>
-    </StackPanel>
-    <Border x:Name="Help" Grid.RowSpan="4" IsVisible="False" Background="#0e0e10">
-      <DockPanel Margin="20,22,20,18">
-        <Button DockPanel.Dock="Bottom" Classes="primary" Content="Понятно" Click="HelpClose"/>
-        <ScrollViewer>
-          <StackPanel Spacing="12">
-            <TextBlock Text="Как это работает" FontSize="20" FontWeight="Bold"/>
-            <Border Background="#18181b" CornerRadius="8" Padding="12">
-              <Grid ColumnDefinitions="28,*">
-                <Border Width="28" Height="28" CornerRadius="14" Background="#9146ff" HorizontalAlignment="Left" VerticalAlignment="Top">
-                  <TextBlock Text="1" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold"/>
-                </Border>
-                <StackPanel Grid.Column="1" Margin="12,0,0,0" Spacing="4">
-                  <TextBlock Text="Введи канал" FontSize="15" FontWeight="SemiBold"/>
-                  <TextBlock Foreground="#adadb8" FontSize="13" TextWrapping="Wrap"
-                             Text="Логин или ссылку Twitch, потом «Старт». Чат этого канала начнёт приходить на твой компьютер."/>
-                  <Border Background="#0e0e10" CornerRadius="6" Padding="8" Margin="0,4,0,0">
-                    <StackPanel Spacing="8">
-                      <Border Height="22" CornerRadius="4" Background="#18181b"/>
-                      <Border Height="22" CornerRadius="4" Background="#9146ff"/>
-                    </StackPanel>
-                  </Border>
-                </StackPanel>
-              </Grid>
-            </Border>
-            <Border Background="#18181b" CornerRadius="8" Padding="12">
-              <Grid ColumnDefinitions="28,*">
-                <Border Width="28" Height="28" CornerRadius="14" Background="#9146ff" HorizontalAlignment="Left" VerticalAlignment="Top">
-                  <TextBlock Text="2" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold"/>
-                </Border>
-                <StackPanel Grid.Column="1" Margin="12,0,0,0" Spacing="4">
-                  <TextBlock Text="Скопируй ссылку" FontSize="15" FontWeight="SemiBold"/>
-                  <TextBlock Foreground="#adadb8" FontSize="13" TextWrapping="Wrap"
-                             Text="Она появится ниже. Кнопка справа кладёт адрес в буфер."/>
-                  <Border Background="#0e0e10" CornerRadius="6" Padding="8" Margin="0,4,0,0">
-                    <Border Height="22" CornerRadius="4" Background="#18181b"/>
-                  </Border>
-                </StackPanel>
-              </Grid>
-            </Border>
-            <Border Background="#18181b" CornerRadius="8" Padding="12">
-              <Grid ColumnDefinitions="28,*">
-                <Border Width="28" Height="28" CornerRadius="14" Background="#9146ff" HorizontalAlignment="Left" VerticalAlignment="Top">
-                  <TextBlock Text="3" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold"/>
-                </Border>
-                <StackPanel Grid.Column="1" Margin="12,0,0,0" Spacing="4">
-                  <TextBlock Text="Вставь в OBS" FontSize="15" FontWeight="SemiBold"/>
-                  <TextBlock Foreground="#adadb8" FontSize="13" TextWrapping="Wrap"
-                             Text="Источник «Браузер», вставь ссылку. Сообщения встанут снизу, поверх картинки стрима."/>
-                  <Border Height="72" CornerRadius="6" Margin="0,4,0,0" ClipToBounds="True">
-                    <Border.Background>
-                      <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
-                        <GradientStop Color="#2a2a2e" Offset="0"/>
-                        <GradientStop Color="#121214" Offset="1"/>
-                      </LinearGradientBrush>
-                    </Border.Background>
-                    <Border Height="28" Margin="8" VerticalAlignment="Bottom" CornerRadius="4" Background="#8C000000" Padding="6">
-                      <StackPanel Spacing="4">
-                        <Border Height="4" Width="120" HorizontalAlignment="Left" CornerRadius="2" Background="White"/>
-                        <Border Height="4" Width="80" HorizontalAlignment="Left" CornerRadius="2" Background="#ff4d4d"/>
-                        <Border Height="4" Width="100" HorizontalAlignment="Left" CornerRadius="2" Background="White"/>
-                      </StackPanel>
-                    </Border>
-                  </Border>
-                </StackPanel>
-              </Grid>
-            </Border>
-          </StackPanel>
-        </ScrollViewer>
-      </DockPanel>
-    </Border>
-    </Grid>
-  </Grid>
+        CanResize="False">
+
+    <NativeWebView x:Name="Browser" />
+
 </Window>

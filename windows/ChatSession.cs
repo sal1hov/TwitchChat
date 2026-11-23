@@ -4,7 +4,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
-namespace ChatServer;
+namespace TwitchChat;
 
 public sealed class StartResult
 {
@@ -61,7 +61,7 @@ public sealed class ChatSession : IDisposable
         _publicDir = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "public"));
         _settingsPath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            "ChatServer",
+            "TwitchChat",
             "settings.json");
     }
 

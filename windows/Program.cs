@@ -1,14 +1,14 @@
 using Avalonia;
 using System.Threading;
 
-namespace ChatServer;
+namespace TwitchChat;
 
 sealed class Program
 {
     [STAThread]
     public static void Main(string[] args)
     {
-        using var mutex = new Mutex(true, "ChatServer.SingleInstance", out var created);
+        using var mutex = new Mutex(true, "TwitchChat.SingleInstance", out var created);
         if (!created) return;
         BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
     }
